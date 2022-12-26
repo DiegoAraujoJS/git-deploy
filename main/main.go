@@ -7,6 +7,8 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
+const A = 0
+
 func main() {
 	fmt.Println("Hello from main")
 	repo, err := git.PlainOpen(".git")
