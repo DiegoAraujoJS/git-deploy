@@ -12,7 +12,9 @@ func init() {
 }
 
 func main() {
-	navigation.Checkout(navigation.StringToHash("2f31df2771abed6ffbabe281b90738ed54815f5d"))
+	// navigation.Checkout(navigation.StringToHash("2f31df2771abed6ffbabe281b90738ed54815f5d"))
+
+    navigation.ShowTags()
 
 	// logResult, err := repo.Log(&git.LogOptions{})
 	// if err != nil {
