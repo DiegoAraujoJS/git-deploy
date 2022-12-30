@@ -10,7 +10,6 @@ import (
 const A = 0
 
 func main() {
-	fmt.Println("Hello from main")
 	repo, err := git.PlainOpen(".git")
 	if err != nil {
 		log.Fatal(err.Error())
