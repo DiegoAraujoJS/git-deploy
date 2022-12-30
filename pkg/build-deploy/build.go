@@ -1,0 +1,3 @@
+package builddeploy
+
+func Build() {}

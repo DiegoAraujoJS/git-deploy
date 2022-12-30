@@ -1,28 +1,28 @@
 package main
 
 import (
-	"fmt"
-	"log"
-
-	"github.com/go-git/go-git/v5"
+	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
+	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
 const A = 0
 
+func init() {
+	utils.Connect()
+}
+
 func main() {
-	repo, err := git.PlainOpen(".git")
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	logResult, err := repo.Log(&git.LogOptions{})
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	for {
-		l, err := logResult.Next()
-		if err != nil {
-			break
-		}
-		fmt.Println(l.String())
-	}
+	navigation.Checkout(navigation.StringToHash("2f31df2771abed6ffbabe281b90738ed54815f5d"))
+
+	// logResult, err := repo.Log(&git.LogOptions{})
+	// if err != nil {
+	// 	log.Fatal(err.Error())
+	// }
+	// for {
+	// 	l, err := logResult.Next()
+	// 	if err != nil {
+	// 		break
+	// 	}
+	// 	fmt.Println(l.Hash)
+	// }
 }

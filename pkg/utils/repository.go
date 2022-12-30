@@ -6,16 +6,18 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
-var Repo *git.Repository
+var (
+    Repository *git.Repository
+)
 
 func Connect() {
-	r, err := git.PlainOpen(".git")
+	r, err := git.PlainOpen("/Users/diegoaraujo/repos/utils_lenox")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	Repo = r
+    Repository = r
 }
 
-func GetRepo() *git.Repository {
-	return Repo
+func GetRepository() *git.Repository {
+    return Repository
 }
