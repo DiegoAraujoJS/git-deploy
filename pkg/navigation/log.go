@@ -2,6 +2,7 @@ package navigation
 
 import (
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
@@ -59,4 +60,37 @@ func GetRemoteBranches() []*plumbing.Reference {
 		remote_branches = append(remote_branches, ref)
 	}
 	return remote_branches
+}
+
+type BranchResponse struct {
+    NewReference string
+    head *object.Commit
+}
+
+func GetReleaseBranchesWithTheirVersioning() []BranchResponse {
+    repo := utils.GetRepository()
+
+    var result []BranchResponse
+
+    branches, err := repo.Branches()
+        if err != nil {
+            log.Fatal(err.Error())
+        }
+    for {
+        branch, err := branches.Next()
+        if err != nil {
+            break
+        }
+        if strings.Contains(branch.Name().String(), "RELEASE") {
+            commits_from_master := utils.GetCommitsFromBranchToMaster(branch)
+            version_number_string := strings.Split(branch.Name().String(), "_")[1]
+            version := version_number_string + "." + strconv.Itoa(commits_from_master)
+            commit, _ := repo.CommitObject(branch.Hash())
+            result = append(result, BranchResponse{
+                NewReference: version,
+                head: commit,
+            })
+        }
+    }
+    return result
 }

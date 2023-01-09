@@ -13,14 +13,14 @@ func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
 
-func GetTags(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Get tags")
+func GetReleaseVersions(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Get release versions")
 	enableCors(&w)
-	response_tags, err := json.Marshal(navigation.GetTags())
+	response, err := json.Marshal(navigation.GetReleaseBranchesWithTheirVersioning())
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(response_tags)
+	w.Write(response)
 }

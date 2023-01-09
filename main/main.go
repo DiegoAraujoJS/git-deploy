@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-
+	"github.com/DiegoAraujoJS/webdev-git-server/api"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
@@ -13,5 +12,5 @@ func init() {
 }
 
 func main() {
-    fmt.Println(utils.GetMasterBranchHash())
+    api.ListenAndServe()
 }

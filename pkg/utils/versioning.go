@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
@@ -9,44 +8,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
-func GetParents() map[string][]plumbing.Hash {
-	repo := GetRepository()
-
-	commits, err := repo.Log(&git.LogOptions{})
-
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	childs := map[string][]plumbing.Hash{}
-
-	for {
-		commit, err := commits.Next()
-
-		if err != nil {
-			break
-		}
-
-		fmt.Println(commit.String())
-		for _, parent := range commit.ParentHashes {
-
-			_, ok := childs[parent.String()]
-			if !ok {
-				childs[parent.String()] = []plumbing.Hash{commit.Hash}
-			} else {
-				childs[parent.String()] = append(childs[parent.String()], commit.Hash)
-			}
-
-		}
-
-	}
-
-	commits.Close()
-
-	return childs
-}
-
-func GetMasterBranchHash() plumbing.Hash {
+func GetBranchHash(branch_name string) plumbing.Hash {
 	repo := GetRepository()
 
 	branches, err := repo.Branches()
@@ -60,9 +22,36 @@ func GetMasterBranchHash() plumbing.Hash {
 		if err != nil {
 			break
 		}
-		if strings.Contains(branch.Name().String(), "master") {
+		if strings.Contains(branch.Name().String(), branch_name) {
 			return branch.Hash()
 		}
 	}
-	panic("master branch not found")
+	panic(branch_name + " branch not found")
+}
+
+func GetCommitsFromBranchToMaster(b *plumbing.Reference) int {
+	repo := GetRepository()
+
+	commit_count := 0
+	commit, _ := repo.CommitObject(b.Hash())
+	master_commit, _ := repo.CommitObject(GetBranchHash("master"))
+	merge_base, err := commit.MergeBase(master_commit)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	log, _ := repo.Log(&git.LogOptions{From: commit.Hash})
+
+	for {
+		next_commit, err := log.Next()
+		if err != nil {
+			break
+		}
+		if next_commit.Hash.String() == merge_base[0].Hash.String() {
+			break
+		}
+		commit_count++
+	}
+	return commit_count
 }
