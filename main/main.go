@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/DiegoAraujoJS/webdev-git-server/api"
+	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
@@ -12,5 +13,6 @@ func init() {
 }
 
 func main() {
+    navigation.GetRemoteBranches()
     api.ListenAndServe()
 }
