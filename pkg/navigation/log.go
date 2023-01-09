@@ -34,6 +34,8 @@ func GetTags() []*object.Tag {
 	return list_tags
 }
 
+const prefix = "refs/heads/"
+
 func GetRemoteBranches() []*plumbing.Reference {
 	repo := utils.GetRepository()
 
@@ -47,8 +49,6 @@ func GetRemoteBranches() []*plumbing.Reference {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-
-	prefix := "refs/heads/"
 
 	var remote_branches []*plumbing.Reference
 

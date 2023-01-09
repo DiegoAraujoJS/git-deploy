@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/DiegoAraujoJS/webdev-git-server/api"
-	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
+	"fmt"
+
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
@@ -13,6 +13,5 @@ func init() {
 }
 
 func main() {
-    navigation.GetRemoteBranches()
-    api.ListenAndServe()
+    fmt.Println(utils.GetMasterBranchHash())
 }
