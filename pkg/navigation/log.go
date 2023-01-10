@@ -83,13 +83,15 @@ func GetReleaseBranchesWithTheirVersioning() []*BranchResponse {
         }
         if strings.Contains(branch.Name().String(), "RELEASE") {
             commits_from_master := utils.GetCommitsFromBranchToMaster(branch)
-            version_number_string := strings.Split(branch.Name().String(), "_")[1]
-            version := version_number_string + "." + strconv.Itoa(commits_from_master)
-            commit, _ := repo.CommitObject(branch.Hash())
-            result = append(result, &BranchResponse{
-                Commit: commit,
-                NewReference: version,
-            })
+            for k, c := range commits_from_master {
+                version_number_string := strings.Split(branch.Name().String(), "_")[1]
+                version := version_number_string + "." + strconv.Itoa(len(commits_from_master) - k)
+
+                result = append(result, &BranchResponse{
+                    Commit: c,
+                    NewReference: version,
+                })
+            }
         }
     }
     return result
