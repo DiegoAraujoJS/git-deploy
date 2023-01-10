@@ -7,8 +7,11 @@ import (
 	"net/http"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
-	"github.com/go-git/go-git/v5/plumbing"
 )
+
+type CheckoutResponse struct {
+	Version string
+}
 
 func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
@@ -17,16 +20,14 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 
 	tag := r.URL.Query().Get("tag")
 
-	fmt.Println("tag --> ", tag)
+	checkout_result, err := navigation.Checkout(tag)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Error while moving to reference"))
+	}
 
-	checkout_result := navigation.Checkout(navigation.TagNameToHash(tag))
-
-	fmt.Println("result --> ", checkout_result.String())
-
-	response, err := json.Marshal(struct {
-		CurrentVersion plumbing.Hash
-	}{
-		CurrentVersion: checkout_result,
+	response, err := json.Marshal(&CheckoutResponse{
+		Version: checkout_result.Hash().String(),
 	})
 
 	if err != nil {

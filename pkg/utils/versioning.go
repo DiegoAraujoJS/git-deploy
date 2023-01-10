@@ -52,7 +52,7 @@ func GetCommitsFromBranchToMaster(b *plumbing.Reference) []*object.Commit {
 		if next_commit.Hash.String() == merge_base[0].Hash.String() {
 			break
 		}
-		commits = append(commits, commit)
+		commits = append(commits, next_commit)
 	}
 	return commits
 }
