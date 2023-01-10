@@ -63,19 +63,19 @@ func GetRemoteBranches() []*plumbing.Reference {
 }
 
 type BranchResponse struct {
-    NewReference string
-    head *object.Commit
+    Commit *object.Commit `json:"commit"`
+    NewReference string `json:"new_reference"`
 }
 
-func GetReleaseBranchesWithTheirVersioning() []BranchResponse {
+func GetReleaseBranchesWithTheirVersioning() []*BranchResponse {
     repo := utils.GetRepository()
 
-    var result []BranchResponse
+    var result []*BranchResponse
 
     branches, err := repo.Branches()
-        if err != nil {
-            log.Fatal(err.Error())
-        }
+    if err != nil {
+        log.Fatal(err.Error())
+    }
     for {
         branch, err := branches.Next()
         if err != nil {
@@ -86,9 +86,9 @@ func GetReleaseBranchesWithTheirVersioning() []BranchResponse {
             version_number_string := strings.Split(branch.Name().String(), "_")[1]
             version := version_number_string + "." + strconv.Itoa(commits_from_master)
             commit, _ := repo.CommitObject(branch.Hash())
-            result = append(result, BranchResponse{
+            result = append(result, &BranchResponse{
+                Commit: commit,
                 NewReference: version,
-                head: commit,
             })
         }
     }

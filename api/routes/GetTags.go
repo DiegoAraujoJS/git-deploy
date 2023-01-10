@@ -18,7 +18,8 @@ func GetReleaseVersions(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 	response, err := json.Marshal(navigation.GetReleaseBranchesWithTheirVersioning())
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Println(err.Error())
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
