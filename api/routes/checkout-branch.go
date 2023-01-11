@@ -18,9 +18,9 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("checkout branch")
 
-	tag := r.URL.Query().Get("tag")
+	hash := r.URL.Query().Get("hash")
 
-	checkout_result, err := navigation.Checkout(tag)
+	checkout_result, err := navigation.Checkout(hash)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Error while moving to reference"))
