@@ -1,7 +1,6 @@
 package navigation
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
@@ -25,11 +24,9 @@ func Pull() {
 		log.Fatal(err.Error())
 	}
 
-	ref, err := repo.Head()
+	_, err = repo.Head()
 
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-
-	fmt.Println(ref.Hash())
 }

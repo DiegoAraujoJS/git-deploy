@@ -16,11 +16,9 @@ type CheckoutResponse struct {
 func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
-	fmt.Println("checkout branch")
+    fmt.Println("checkout branch", r.URL.Query().Get("commit"))
 
-	hash := r.URL.Query().Get("hash")
-
-	checkout_result, err := navigation.Checkout(hash)
+	checkout_result, err := navigation.Checkout(r.URL.Query().Get("commit"))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Error while moving to reference"))

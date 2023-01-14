@@ -2,6 +2,7 @@ package navigation
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
@@ -28,6 +29,8 @@ func Checkout(hash string) (*plumbing.Reference, error) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+
+    fmt.Println("head", ref.Hash())
 
 	return ref, nil
 }
