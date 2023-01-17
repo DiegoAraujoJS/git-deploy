@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/build-deploy"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
+	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
 type CheckoutResponse struct {
@@ -38,6 +40,12 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Error while deploying web application to IIS"))
 	}
+
+    utils.ConfigValue.LastBuild = struct{Version string; Date string}{
+        Date: time.Now().String(),
+        Version: checkout_result.Hash().String(),
+    }
+    utils.WriteIntoJson()
 
 	response, err := json.Marshal(&CheckoutResponse{
 		Version: checkout_result.Hash().String(),

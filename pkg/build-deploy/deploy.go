@@ -16,7 +16,6 @@ func DeployIIS() error {
         fmt.Println(err.Error())
         return err
     }
-    fmt.Println(string (stdout))
+    fmt.Println("output", string (stdout))
     return err
-
 }

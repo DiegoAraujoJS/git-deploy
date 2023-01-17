@@ -13,7 +13,10 @@ type Config struct {
 	ClientDirectory  string
     BuildOutputFolder string
 	BackendDirectory string
-	LastBuild        string
+	LastBuild        struct{
+        Version string
+        Date string
+    }
     IISDirectory string
 }
 

@@ -2,7 +2,7 @@ package main
 
 import (
 	// "github.com/DiegoAraujoJS/webdev-git-server/api"
-	builddeploy "github.com/DiegoAraujoJS/webdev-git-server/pkg/build-deploy"
+	"github.com/DiegoAraujoJS/webdev-git-server/api"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
@@ -13,6 +13,5 @@ func init() {
 }
 
 func main() {
-	builddeploy.DeployIIS()
-	// api.ListenAndServe()
+	api.ListenAndServe()
 }
