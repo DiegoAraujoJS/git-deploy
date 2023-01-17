@@ -9,29 +9,37 @@ import (
 )
 
 type Config struct {
-	Directory string
+	Directory        string
+	ClientDirectory  string
+    BuildOutputFolder string
+	BackendDirectory string
+	LastBuild        string
+    IISDirectory string
 }
 
 var (
-	Repository *git.Repository
-    config Config
+	Repository  *git.Repository
+	ConfigValue Config
 )
 
-
 func Connect() {
-    content, err := ioutil.ReadFile("./config.json")
+	content, err := ioutil.ReadFile("./config.json")
 
-    if err != nil {
-        log.Fatal(err.Error())
-    }
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
-    err = json.Unmarshal(content, &config)
+	err = json.Unmarshal(content, &ConfigValue)
 
-    if err != nil {
-        log.Fatal(err.Error())
-    }
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
-	r, err := git.PlainOpen(config.Directory)
+	if len(ConfigValue.Directory) == 0 || len(ConfigValue.ClientDirectory) == 0 || len(ConfigValue.BackendDirectory) == 0 {
+		log.Fatal(err.Error())
+	}
+
+	r, err := git.PlainOpen(ConfigValue.Directory)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
