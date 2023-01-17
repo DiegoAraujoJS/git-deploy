@@ -75,7 +75,8 @@ func GetReleaseBranchesWithTheirVersioning() *BranchResponse {
 		if strings.Contains(branch.Name().String(), "RELEASE") {
 			commits_from_master := utils.GetCommitsFromBranchToMaster(branch)
 			for k, c := range commits_from_master {
-				version_number_string := strings.Split(branch.Name().String(), "_")[1]
+				undercase_split := strings.Split(branch.Name().String(), "_")
+				version_number_string := undercase_split[len(undercase_split)-1]
 				version := version_number_string + "." + strconv.Itoa(len(commits_from_master)-k)
 				if k == 0 {
 					current_version = version
