@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/build-deploy"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
@@ -19,33 +18,36 @@ type CheckoutResponse struct {
 func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
-	fmt.Println("checkout branch", r.URL.Query().Get("commit"))
+	fmt.Println("checkout branch", r.URL.Query().Get("repo"), r.URL.Query().Get("commit"))
 
-	checkout_result, err := navigation.Checkout(r.URL.Query().Get("commit"))
+	checkout_result, err := navigation.Checkout(r.URL.Query().Get("repo"), r.URL.Query().Get("commit"))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Error while moving to reference"))
 	}
 
-	build_err := builddeploy.Build()
+    var directory string
+    var script string
+    for _, v := range utils.ConfigValue.Directories {
+        if v.Name == r.URL.Query().Get("repo") {
+            directory = v.Directory
+            script = v.BuildScriptPath
+        }
+    }
+	build_err := builddeploy.Build(directory, script)
 
 	if build_err != nil {
+        log.Fatal(build_err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Error while building web application"))
 	}
 
-    deploy_err := builddeploy.DeployIIS()
+	// deploy_err := builddeploy.DeployIIS()
 
-	if deploy_err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Error while deploying web application to IIS"))
-	}
-
-    utils.ConfigValue.LastBuild = struct{Version string; Date string}{
-        Date: time.Now().String(),
-        Version: checkout_result.Hash().String(),
-    }
-    utils.WriteIntoJson()
+	// if deploy_err != nil {
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// 	w.Write([]byte("Error while deploying web application to IIS"))
+	// }
 
 	response, err := json.Marshal(&CheckoutResponse{
 		Version: checkout_result.Hash().String(),

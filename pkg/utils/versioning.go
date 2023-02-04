@@ -9,8 +9,8 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-func GetBranchHash(branch_name string) plumbing.Hash {
-	repo := GetRepository()
+func GetBranchHash(repository string, branch_name string) plumbing.Hash {
+	repo := GetRepository(repository)
 
 	branches, err := repo.Branches()
 
@@ -30,12 +30,12 @@ func GetBranchHash(branch_name string) plumbing.Hash {
 	panic(branch_name + " branch not found")
 }
 
-func GetCommitsFromBranchToMaster(b *plumbing.Reference) []*object.Commit {
-	repo := GetRepository()
+func GetCommitsFromBranchToMaster(repository string, b *plumbing.Reference) []*object.Commit {
+	repo := GetRepository(repository)
 
 	var commits []*object.Commit
 	commit, _ := repo.CommitObject(b.Hash())
-	master_commit, _ := repo.CommitObject(GetBranchHash("master"))
+	master_commit, _ := repo.CommitObject(GetBranchHash(repository, "master"))
 	merge_base, err := commit.MergeBase(master_commit)
 
 	if err != nil {

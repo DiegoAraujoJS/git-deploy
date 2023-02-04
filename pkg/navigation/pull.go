@@ -7,8 +7,8 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
-func Pull() {
-	repo := utils.GetRepository()
+func Pull(repository string) {
+	repo := utils.GetRepository(repository)
 
     w, err := repo.Worktree()
 

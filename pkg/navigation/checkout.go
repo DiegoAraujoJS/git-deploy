@@ -10,12 +10,12 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
-func Checkout(hash string) (*plumbing.Reference, error) {
-	repo := utils.GetRepository()
+func Checkout(repository string, hash string) (*plumbing.Reference, error) {
+	repo := utils.GetRepository(repository)
 	w, err := repo.Worktree()
 
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal("first error. ", err.Error())
 	}
 
 	err = w.Checkout(&git.CheckoutOptions{
@@ -27,10 +27,10 @@ func Checkout(hash string) (*plumbing.Reference, error) {
 
 	ref, err := repo.Head()
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal("second error.", err.Error())
 	}
 
-    fmt.Println("head", ref.Hash())
+	fmt.Println("head", ref.Hash())
 
 	return ref, nil
 }

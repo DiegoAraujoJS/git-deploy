@@ -1,0 +1,7 @@
+To get all versions according to branches from master with prefix RELEASE -- done
+To get the current version of the git worktree -- pending.
+To move through those same versiones -- done.
+To build (npx vite build) and deploy the build to a static folder. -- pending.
+
+Additional
+To get the diff between any version and any other.

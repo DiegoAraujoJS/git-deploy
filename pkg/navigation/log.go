@@ -6,36 +6,12 @@ import (
 	"strings"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
-	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 const prefix = "refs/heads/"
 
-func GetRemoteBranches() []*plumbing.Reference {
-	repo := utils.GetRepository()
-
-	remote, err := repo.Remote("origin")
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	ref_list, err := remote.List(&git.ListOptions{})
-
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	var remote_branches []*plumbing.Reference
-	for _, ref := range ref_list {
-		if !strings.HasPrefix(ref.Name().String(), prefix) {
-			continue
-		}
-		remote_branches = append(remote_branches, ref)
-	}
-	return remote_branches
-}
 
 type Commit struct {
 	Hash         string
@@ -57,8 +33,8 @@ type BranchResponse struct {
 	CurrentVersion string    `json:"current_version"`
 }
 
-func GetReleaseBranchesWithTheirVersioning() *BranchResponse {
-	repo := utils.GetRepository()
+func GetReleaseBranchesWithTheirVersioning(repository string) *BranchResponse {
+	repo := utils.GetRepository(repository)
 
 	var result []*Branch
 
@@ -73,7 +49,7 @@ func GetReleaseBranchesWithTheirVersioning() *BranchResponse {
 			break
 		}
 		if strings.Contains(branch.Name().String(), "RELEASE") {
-			commits_from_master := utils.GetCommitsFromBranchToMaster(branch)
+			commits_from_master := utils.GetCommitsFromBranchToMaster(repository, branch)
 			for k, c := range commits_from_master {
 				undercase_split := strings.Split(branch.Name().String(), "_")
 				version_number_string := undercase_split[len(undercase_split)-1]

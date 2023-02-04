@@ -13,27 +13,23 @@ import (
 
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-    (*w).Header().Set("Access-Control-Allow-Headers", "*")
+	(*w).Header().Set("Access-Control-Allow-Headers", "*")
 }
 
 type FullResponse struct {
-    *navigation.BranchResponse
-    LastBuild *struct{
-        Version string
-        Date string
-    } `json:"last_build"`
+	*navigation.BranchResponse
 }
 
 func GetReleaseVersions(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Get release versions")
 	enableCors(&w)
 	content, _ := ioutil.ReadFile("./config.json")
-    json.Unmarshal(content, &utils.ConfigValue)
+	json.Unmarshal(content, &utils.ConfigValue)
 
+	repo := r.URL.Query().Get("repo")
 	response, err := json.Marshal(&FullResponse{
-        BranchResponse: navigation.GetReleaseBranchesWithTheirVersioning(),
-        LastBuild: &utils.ConfigValue.LastBuild,
-    })
+		BranchResponse: navigation.GetReleaseBranchesWithTheirVersioning(repo),
+	})
 	if err != nil {
 		log.Println(err.Error())
 		return
