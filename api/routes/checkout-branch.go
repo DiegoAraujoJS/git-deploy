@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/DiegoAraujoJS/webdev-git-server/database"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/build-deploy"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
-	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
 type CheckoutResponse struct {
@@ -19,21 +19,15 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 
 	fmt.Println("checkout branch", r.URL.Query().Get("repo"), r.URL.Query().Get("commit"))
+    repo := r.URL.Query().Get("repo")
 
-	checkout_result, err := navigation.Checkout(r.URL.Query().Get("repo"), r.URL.Query().Get("commit"))
+	checkout_result, err := navigation.Checkout(repo, r.URL.Query().Get("commit"))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Error while moving to reference"))
 	}
 
-    var directory string
-    var script string
-    for _, v := range utils.ConfigValue.Directories {
-        if v.Name == r.URL.Query().Get("repo") {
-            directory = v.Directory
-        }
-    }
-	build_err := builddeploy.Build(directory, script)
+	build_err := builddeploy.Build(repo)
 
 	if build_err != nil {
         log.Fatal(build_err.Error())
@@ -41,6 +35,7 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Error while building web application"))
 	}
 
+    database.InsertVersionChangeEvent(checkout_result.Hash().String())
 	response, err := json.Marshal(&CheckoutResponse{
 		Version: checkout_result.Hash().String(),
 	})

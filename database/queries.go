@@ -1,8 +1,44 @@
 package database
 
-import "time"
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	"strconv"
+	"time"
+)
 
-func InsertVersionChangeEvent(hash string) {
-	query := "INSERT INTO History (hash, createdAt) VALUES (" + hash + "," + time.Now().String() + ")"
-	ConnectExecuteAndClose(query)
+// We cache the ids for avoiding to make constant connections and queries to the db.
+var id_cache = map[string]int{}
+
+func InsertVersionChangeEvent(repo string, hash string) {
+    repoId, ok := id_cache[repo]
+    if !ok {
+        var repoId int
+        database := Connect()
+        if err := database.QueryRow("SELECT id FROM Repos WHERE repo = '" + repo + "'").Scan(&repoId); err != nil {
+            if err == sql.ErrNoRows {
+                fmt.Println("Failed to execute "+"SELECT id FROM Repos WHERE repo = '" + repo + "'", "No row that verifies condition.")
+            }
+        }
+        id_cache[repo] = repoId
+        database.Close()
+    }
+	query := "INSERT INTO History (hash, createdAt, repoId) VALUES (" + hash + "," + time.Now().String() + "," + strconv.Itoa(repoId) + ")"
+	connectExecuteAndClose(query)
+}
+
+func InsertRepo(database *sql.DB, repo string) {
+    query, err := database.Query("SELECT id FROM Repos WHERE repo = '" + repo + "'")
+    if err != nil {
+        fmt.Println(err.Error())
+    }
+    // We check for duplicates
+    if !query.Next() {
+        statement, err := database.Prepare("INSERT INTO Repos (repo) VALUES (" + repo + ")")
+        if err != nil {
+            log.Println(err.Error())
+        }
+        statement.Exec()
+    }
 }

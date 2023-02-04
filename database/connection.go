@@ -2,10 +2,25 @@ package database
 
 import (
 	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"os"
+
+	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
+	_ "github.com/mattn/go-sqlite3"
 )
+
+const tableRepos = `CREATE TABLE IF NOT EXISTS Repos (
+		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,		
+        repo TEXT NOT NULL,
+	  );`
+
+const tableHistory = `CREATE TABLE IF NOT EXISTS History (
+		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,		
+		hash TEXT NOT NULL,
+        createdAt TEXT,
+        repoId INTEGER NOT NULL,
+        FOREIGN KEY(app) REFERENCES Apps(id)
+	  );`
 
 func CreateDatabase() {
 	if _, err := os.Stat("git-history.db"); err != nil && os.IsNotExist(err) {
@@ -16,7 +31,13 @@ func CreateDatabase() {
 		file.Close()
 		sqliteDatabase := Connect()
 		defer sqliteDatabase.Close()
-		createTable(sqliteDatabase)
+		createTable(sqliteDatabase, tableRepos)
+		createTable(sqliteDatabase, tableHistory)
+
+        for _, dir := range utils.ConfigValue.Directories {
+            InsertRepo(sqliteDatabase, dir.Name)
+        }
+
 		log.Println("sqlite-database.db created")
 	}
 }
@@ -26,7 +47,7 @@ func Connect() *sql.DB {
 	return sqliteDatabase
 }
 
-func ConnectExecuteAndClose(query string) {
+func connectExecuteAndClose(query string) {
 	sqliteDatabase := Connect()
 	defer sqliteDatabase.Close() // Defer Closing the database
 	statement, err := sqliteDatabase.Prepare(query)
@@ -36,13 +57,8 @@ func ConnectExecuteAndClose(query string) {
 	statement.Exec() // Execute SQL Statements
 }
 
-func createTable(db *sql.DB) {
-	createStudentTableSQL := `CREATE TABLE IF NOT EXISTS History (
-		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,		
-		hash TEXT,
-        createdAt TEXT
-	  );`
-
+func createTable(db *sql.DB, query string) {
+	createStudentTableSQL := query
 	statement, err := db.Prepare(createStudentTableSQL) // Prepare SQL Statement
 	if err != nil {
 		log.Fatal(err.Error())
