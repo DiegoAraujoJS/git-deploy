@@ -31,7 +31,6 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
     for _, v := range utils.ConfigValue.Directories {
         if v.Name == r.URL.Query().Get("repo") {
             directory = v.Directory
-            script = v.BuildScriptPath
         }
     }
 	build_err := builddeploy.Build(directory, script)
@@ -41,13 +40,6 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Error while building web application"))
 	}
-
-	// deploy_err := builddeploy.DeployIIS()
-
-	// if deploy_err != nil {
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	w.Write([]byte("Error while deploying web application to IIS"))
-	// }
 
 	response, err := json.Marshal(&CheckoutResponse{
 		Version: checkout_result.Hash().String(),
