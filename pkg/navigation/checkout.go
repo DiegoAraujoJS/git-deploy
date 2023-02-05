@@ -1,8 +1,6 @@
 package navigation
 
 import (
-	"errors"
-	"fmt"
 	"log"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
@@ -15,22 +13,22 @@ func Checkout(repository string, hash string) (*plumbing.Reference, error) {
 	w, err := repo.Worktree()
 
 	if err != nil {
-		log.Fatal("first error. ", err.Error())
+		log.Println("first error. ", err.Error())
+		return nil, err
 	}
 
 	err = w.Checkout(&git.CheckoutOptions{
 		Hash: plumbing.NewHash(hash),
 	})
 	if err != nil {
-		return &plumbing.Reference{}, errors.New("could not checkout")
+		return nil, err
 	}
 
 	ref, err := repo.Head()
 	if err != nil {
-		log.Fatal("second error.", err.Error())
+		log.Println("second error.", err.Error())
+		return nil, err
 	}
-
-	fmt.Println("head", ref.Hash())
 
 	return ref, nil
 }

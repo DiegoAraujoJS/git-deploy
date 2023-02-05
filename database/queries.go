@@ -11,7 +11,7 @@ import (
 // We cache the ids for avoiding to make constant connections and queries to the db.
 var id_cache = map[string]int{}
 
-func InsertVersionChangeEvent(repo string, hash string) {
+func InsertVersionChangeEvent(repo string, hash string) error {
     repoId, ok := id_cache[repo]
     if !ok {
         var repoId int
@@ -19,16 +19,23 @@ func InsertVersionChangeEvent(repo string, hash string) {
         if err := database.QueryRow("SELECT id FROM Repos WHERE repo = '" + repo + "'").Scan(&repoId); err != nil {
             if err == sql.ErrNoRows {
                 fmt.Println("Failed to execute "+"SELECT id FROM Repos WHERE repo = '" + repo + "'", "No row that verifies condition.")
+                return err
             }
+            return err
         }
         id_cache[repo] = repoId
         database.Close()
     }
 	query := "INSERT INTO History (hash, createdAt, repoId) VALUES (" + hash + "," + time.Now().String() + "," + strconv.Itoa(repoId) + ")"
-	connectExecuteAndClose(query)
+    err := connectExecuteAndClose(query)
+    if err != nil {
+        log.Println()
+        return err
+    }
+    return nil
 }
 
-func InsertRepo(database *sql.DB, repo string) {
+func insertRepo(database *sql.DB, repo string) {
     query, err := database.Query("SELECT id FROM Repos WHERE repo = '" + repo + "'")
     if err != nil {
         fmt.Println(err.Error())
