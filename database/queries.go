@@ -11,6 +11,7 @@ import (
 // We cache the ids for avoiding to make constant connections and queries to the db.
 var id_cache = map[string]int{}
 
+// Inserts a row into the database with a version change event.
 func InsertVersionChangeEvent(repo string, hash string) error {
     repoId, ok := id_cache[repo]
     if !ok {
