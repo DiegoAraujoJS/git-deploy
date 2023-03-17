@@ -17,9 +17,10 @@ func InsertVersionChangeEvent(repo string, hash string) error {
     if !ok {
         var repoId int
         database := Connect()
-        if err := database.QueryRow("SELECT id FROM Repos WHERE repo = '" + repo + "'").Scan(&repoId); err != nil {
+        query := "SELECT id FROM Repos WHERE repo = '" + repo + "'"
+        if err := database.QueryRow(query).Scan(&repoId); err != nil {
             if err == sql.ErrNoRows {
-                fmt.Println("Failed to execute "+"SELECT id FROM Repos WHERE repo = '" + repo + "'", "No row that verifies condition.")
+                fmt.Println("Failed to execute "+ query + "'", "No row that verifies condition.")
                 return err
             }
             return err
@@ -27,8 +28,7 @@ func InsertVersionChangeEvent(repo string, hash string) error {
         id_cache[repo] = repoId
         database.Close()
     }
-	query := "INSERT INTO History (hash, createdAt, repoId) VALUES (" + hash + "," + time.Now().String() + "," + strconv.Itoa(repoId) + ")"
-    err := connectExecuteAndClose(query)
+    err := connectExecuteAndClose("INSERT INTO History (hash, createdAt, repoId) VALUES (" + hash + "," + time.Now().String() + "," + strconv.Itoa(repoId) + ")")
     if err != nil {
         log.Println()
         return err
@@ -39,7 +39,7 @@ func InsertVersionChangeEvent(repo string, hash string) error {
 func insertRepo(database *sql.DB, repo string) {
     query, err := database.Query("SELECT id FROM Repos WHERE repo = '" + repo + "'")
     if err != nil {
-        fmt.Println(err.Error())
+        log.Println(err.Error())
     }
     // We check for duplicates
     if !query.Next() {
