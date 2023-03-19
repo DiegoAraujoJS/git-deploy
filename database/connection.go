@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
@@ -21,7 +22,7 @@ func CreateDatabase() {
 
 		createTable(sqliteDatabase, `CREATE TABLE IF NOT EXISTS Repos (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,		
-        repo TEXT NOT NULL,
+        repo TEXT NOT NULL
 	  );`)
 		createTable(sqliteDatabase, `CREATE TABLE IF NOT EXISTS History (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,		
@@ -32,11 +33,14 @@ func CreateDatabase() {
 	  );`)
 
         for _, dir := range utils.ConfigValue.Directories {
+            fmt.Println(dir.Name)
             insertRepo(sqliteDatabase, dir.Name)
         }
 
-		log.Println("sqlite-database.db created")
-	}
+		log.Println("git-history.db created")
+	} else {
+        log.Println("git-history.db already exists.")
+    }
 }
 
 func Connect() *sql.DB {
