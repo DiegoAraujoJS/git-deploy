@@ -53,6 +53,7 @@ func GetCommitsFromBranchToMaster(repository string, b *plumbing.Reference) []*o
 		if next_commit.Hash.String() == merge_base[0].Hash.String() {
 			break
 		}
+        commits = append(commits, next_commit)
 	}
 	return commits
 }

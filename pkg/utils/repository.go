@@ -10,6 +10,7 @@ import (
 
 // Config is the struct that holds the configuration for the git repositories. The configuration is read from a json file that is located in the root of the project.
 type Config struct {
+    Port string
 	Directories []struct {
 		Name      string
 		Directory string

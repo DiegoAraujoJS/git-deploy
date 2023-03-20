@@ -29,7 +29,7 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 	}
 
     if build_err := builddeploy.Build(repo); build_err != nil {
-        log.Println(build_err.Error())
+        log.Println("Build error", build_err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Error while building web application"))
 	}
@@ -38,7 +38,10 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 		Version: checkout_result.Hash().String(),
     }
 
+    fmt.Println("checkout result", checkout_result.Hash().String())
+
     if query_error := database.InsertVersionChangeEvent(repo, checkout_result.Hash().String()); query_error != nil {
+        log.Println("Error while inserting version change event to version history", query_error.Error())
         response.Errors["db_error"] = "An error ocurred while inserting the version change to version history."
     }
 

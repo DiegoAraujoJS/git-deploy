@@ -44,8 +44,8 @@ func GetReleaseBranchesWithTheirVersioning(repository string) *BranchResponse {
 	}
 	var current_version string
 	for {
-		branch, err := branches.Next()
-		if err != nil {
+		branch, _ := branches.Next()
+		if branch == nil {
 			break
 		}
 		if strings.Contains(branch.Name().String(), "RELEASE") {
@@ -54,9 +54,10 @@ func GetReleaseBranchesWithTheirVersioning(repository string) *BranchResponse {
 				undercase_split := strings.Split(branch.Name().String(), "_")
 				version_number_string := undercase_split[len(undercase_split)-1]
 				version := version_number_string + "." + strconv.Itoa(len(commits_from_master)-k)
-				if k == 0 {
+                if head, err := repo.Head(); err == nil && head.Hash().String() == c.Hash.String() {
 					current_version = version
 				}
+
 				result = append(result, &Branch{
 					Commit: &Commit{
 						Hash:      c.Hash.String(),
