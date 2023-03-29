@@ -8,7 +8,7 @@ import (
 
 func init() {
 	utils.Connect()
-	database.CreateDatabase()
+    database.CreateTables()
 }
 
 func main() {

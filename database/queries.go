@@ -17,7 +17,7 @@ func InsertVersionChangeEvent(repo string, hash string) error {
     fmt.Println("Inserting version change event for repo: " + repo, ok)
     if !ok {
         var repoId int
-        database := Connect()
+        database, _ := Connect()
         query := "SELECT id FROM Repos WHERE repo = '" + repo + "'"
         if err := database.QueryRow(query).Scan(&repoId); err != nil {
             if err == sql.ErrNoRows {
@@ -37,27 +37,16 @@ func InsertVersionChangeEvent(repo string, hash string) error {
 }
 
 func insertRepo(database *sql.DB, repo string) {
-    fmt.Println("Inserting repo: " + repo)
-    select_statement := "SELECT id FROM Repos WHERE repo = '" + repo + "'"
-    query, err := database.Query(select_statement)
+    statement, err := database.Prepare("INSERT INTO Repos (repo) VALUES ('" + repo + "')")
     if err != nil {
-        log.Println("Error trying to execute SELECT statement: ", err.Error())
+        log.Println("Error trying to prepare INSERT statement: ", err.Error())
     }
-    // We check for duplicates
-    if !query.Next() {
-        statement, err := database.Prepare("INSERT INTO Repos (repo) VALUES ('" + repo + "')")
-        if err != nil {
-            log.Println("Error trying to prepare INSERT statement: ", err.Error())
-        }
-        _, err = statement.Exec()
-        if err != nil {
-            log.Println("Error trying to execute INSERT statement: ", err.Error())
-        } else {
-            log.Println("Repo " + repo + " inserted.")
-        }
+    _, err = statement.Exec()
+    if err != nil {
+        log.Println("Error trying to execute INSERT statement: ", err.Error())
         return
     }
-    log.Println("Repo already exists.")
+    log.Println("Repo " + repo + " inserted.")
 }
 
 type VersionChangeEvent struct {
@@ -68,7 +57,7 @@ type VersionChangeEvent struct {
 // Gets all the version change events for a given repo. The format is a struct with the following form: {hash: string, createdAt: string}. It returns an error if repo does not exist or if fails to select.
 func SelectVersionChangeEvents(repo string) ([]*VersionChangeEvent, error) {
     var repoId int
-    database := Connect()
+    database, _ := Connect()
     query := "SELECT id FROM Repos WHERE repo = '" + repo + "'"
     if err := database.QueryRow(query).Scan(&repoId); err != nil {
         if err == sql.ErrNoRows {
