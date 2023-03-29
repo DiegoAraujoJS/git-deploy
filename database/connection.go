@@ -11,13 +11,14 @@ import (
 )
 
 func CreateDatabase() {
+    var sqliteDatabase *sql.DB
 	if _, err := os.Stat("git-history.db"); err != nil && os.IsNotExist(err) {
 		file, err := os.Create("git-history.db") // Create SQLite file
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 		file.Close()
-		sqliteDatabase := Connect()
+		sqliteDatabase = Connect()
 		defer sqliteDatabase.Close()
 
 		createTable(sqliteDatabase, `CREATE TABLE IF NOT EXISTS Repos (
@@ -32,14 +33,16 @@ func CreateDatabase() {
         FOREIGN KEY(repoId) REFERENCES Apps(id)
 	  );`)
 
-        for _, dir := range utils.ConfigValue.Directories {
-            fmt.Println(dir.Name)
-            insertRepo(sqliteDatabase, dir.Name)
-        }
 
 		log.Println("git-history.db created")
 	} else {
         log.Println("git-history.db already exists.")
+		sqliteDatabase = Connect()
+		defer sqliteDatabase.Close()
+    }
+    for _, dir := range utils.ConfigValue.Directories {
+        fmt.Println(dir.Name)
+        insertRepo(sqliteDatabase, dir.Name)
     }
 }
 

@@ -15,6 +15,7 @@ func ListenAndServe() {
     http.HandleFunc("/getRepos", routes.GetRepos)
 	http.HandleFunc("/getTags", routes.GetReleaseVersions)
 	http.HandleFunc("/checkout", routes.CheckoutBranch)
+    http.HandleFunc("/repoHistory", routes.GetRepoHistory)
     if utils.ConfigValue.Port == "" {
         utils.ConfigValue.Port = PORT
     }

@@ -29,8 +29,9 @@ type Branch struct {
 }
 
 type BranchResponse struct {
-	Tags           []*Branch `json:"tags"`
+	Commits           []*Branch `json:"commits"`
 	CurrentVersion string    `json:"current_version"`
+    Head           *Commit    `json:"head"`
 }
 
 func GetReleaseBranchesWithTheirVersioning(repository string) *BranchResponse {
@@ -43,35 +44,39 @@ func GetReleaseBranchesWithTheirVersioning(repository string) *BranchResponse {
 		log.Fatal(err.Error())
 	}
 	var current_version string
+    var head_commit *Commit
 	for {
 		branch, _ := branches.Next()
-		if branch == nil {
-			break
-		}
-		if strings.Contains(branch.Name().String(), "RELEASE") {
-			commits_from_master := utils.GetCommitsFromBranchToMaster(repository, branch)
-			for k, c := range commits_from_master {
-				undercase_split := strings.Split(branch.Name().String(), "_")
-				version_number_string := undercase_split[len(undercase_split)-1]
-				version := version_number_string + "." + strconv.Itoa(len(commits_from_master)-k)
-                if head, err := repo.Head(); err == nil && head.Hash().String() == c.Hash.String() {
-					current_version = version
-				}
+		if branch == nil { break }
+		if !strings.Contains(branch.Name().String(), "RELEASE") { continue }
+        commits_from_master := utils.GetCommitsFromBranchToMaster(repository, branch)
+        for k, c := range commits_from_master {
+            undercase_split := strings.Split(branch.Name().String(), "_")
+            version_number_string := undercase_split[len(undercase_split)-1]
+            version := version_number_string + "." + strconv.Itoa(len(commits_from_master)-k)
 
-				result = append(result, &Branch{
-					Commit: &Commit{
-						Hash:      c.Hash.String(),
-						Author:    c.Author,
-						Committer: c.Committer,
-						Message:   c.Message,
-					},
-					NewReference: version,
-				})
-			}
-		}
+            commit := &Commit{
+                Hash:      c.Hash.String(),
+                Author:    c.Author,
+                Committer: c.Committer,
+                Message:   c.Message,
+            }
+
+            result = append(result, &Branch{
+                Commit: commit,
+                NewReference: version,
+            })
+            
+            if head, err := repo.Head(); err == nil && head.Hash().String() == c.Hash.String() {
+                current_version = version
+                head_commit = commit
+            }
+        }
+
 	}
 	return &BranchResponse{
-		Tags:           result,
+		Commits:           result,
 		CurrentVersion: current_version,
+        Head: head_commit,
 	}
 }
