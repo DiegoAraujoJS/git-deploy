@@ -15,6 +15,13 @@ type Config struct {
 		Name      string
 		Directory string
 	}
+    Database struct {
+        Server string
+        Port string
+        User string
+        Password string
+        Name string
+    }
 }
 
 var Repositories = map[string]*git.Repository{}

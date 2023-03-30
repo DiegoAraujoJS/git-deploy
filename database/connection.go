@@ -9,7 +9,6 @@ import (
 	_ "github.com/denisenkom/go-mssqldb"
 )
 
-const connString = "server=localhost;user id=sa;password=Soporte2986;database=GitEvents;"
 
 func CreateTables() {
 	db, err := Connect()
@@ -30,8 +29,8 @@ func CreateTables() {
 
     createTableHistoryQuery := `IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='History' and xtype='U') CREATE TABLE History (
 		id INTEGER IDENTITY(1,1) PRIMARY KEY,		
-		hash TEXT NOT NULL,
-        createdAt TEXT,
+		hash VARCHAR(255) NOT NULL,
+        createdAt VARCHAR(255) NOT NULL,
         repoId INTEGER NOT NULL,
         CONSTRAINT fk_repoId FOREIGN KEY(repoId)
         REFERENCES Repos(id)
@@ -58,8 +57,9 @@ func CreateTables() {
 }
 
 func Connect() (*sql.DB, error) {
-	sql_database, err := sql.Open("sqlserver", connString) // Open the created SQLite File
-	return sql_database, err
+    connString := "server="+utils.ConfigValue.Database.Server+";user id="+utils.ConfigValue.Database.User+";password="+ utils.ConfigValue.Database.Password+";database="+ utils.ConfigValue.Database.Name+";"
+    sql_database, err := sql.Open("sqlserver", connString)
+    return sql_database, err
 }
 
 func connectExecuteAndClose(query string) error {
@@ -72,14 +72,4 @@ func connectExecuteAndClose(query string) error {
 	}
     _, err = statement.Exec() // Execute SQL Statements
     return err
-}
-
-func createTable(db *sql.DB, query string) {
-	createStudentTableSQL := query
-	statement, err := db.Prepare(createStudentTableSQL) // Prepare SQL Statement
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	statement.Exec() // Execute SQL Statements
-    log.Println("Created -->", query)
 }
