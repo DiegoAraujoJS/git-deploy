@@ -26,7 +26,6 @@ func InsertVersionChangeEvent(repo string, hash string) error {
             return err
         }
         id_cache[repo] = repoId
-        database.Close()
     }
     err := connectExecuteAndClose("INSERT INTO History (hash, createdAt, repoId) VALUES ('" + hash + "','" + time.Now().String() + "'," + strconv.Itoa(id_cache[repo]) + ")")
     if err != nil {

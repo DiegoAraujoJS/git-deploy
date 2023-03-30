@@ -9,13 +9,14 @@ import (
 	_ "github.com/denisenkom/go-mssqldb"
 )
 
+var sql_database *sql.DB
+
 
 func CreateTables() {
 	db, err := Connect()
 	if err != nil {
 		log.Fatal("Error while opening database connection:", err.Error())
 	}
-	defer db.Close()
 
 	err = db.Ping()
 	if err != nil {
@@ -57,6 +58,9 @@ func CreateTables() {
 }
 
 func Connect() (*sql.DB, error) {
+    if sql_database != nil {
+        return sql_database, nil
+    }
     var connString string
     if utils.ConfigValue.Env == "dev" {
         connString = "server="+utils.ConfigValue.Database.Server+";user id="+utils.ConfigValue.Database.User+";password="+ utils.ConfigValue.Database.Password+";database="+ utils.ConfigValue.Database.Name+";"
@@ -64,14 +68,18 @@ func Connect() (*sql.DB, error) {
         connString = "server=localhost" + ";user id=" + ";database=" + utils.ConfigValue.Database.Name + ";trusted_connection=yes;"
     }
     fmt.Println("Connecting to database with connection string:", connString)
-    sql_database, err := sql.Open("sqlserver", connString)
+    new_sql_database, err := sql.Open("sqlserver", connString)
+    if err != nil {
+        log.Println("Error while opening database connection:", err.Error())
+        return nil, err
+    }
+    sql_database = new_sql_database
     fmt.Println("Successfully connected to database")
     return sql_database, err
 }
 
 func connectExecuteAndClose(query string) error {
 	sql_database, _ := Connect()
-	defer sql_database.Close() // Defer Closing the database
 	statement, err := sql_database.Prepare(query)
 	if err != nil {
 		log.Println(err.Error())
