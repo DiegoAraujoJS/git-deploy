@@ -57,8 +57,15 @@ func CreateTables() {
 }
 
 func Connect() (*sql.DB, error) {
-    connString := "server="+utils.ConfigValue.Database.Server+";user id="+utils.ConfigValue.Database.User+";password="+ utils.ConfigValue.Database.Password+";database="+ utils.ConfigValue.Database.Name+";"
+    var connString string
+    if utils.ConfigValue.Env == "dev" {
+        connString = "server="+utils.ConfigValue.Database.Server+";user id="+utils.ConfigValue.Database.User+";password="+ utils.ConfigValue.Database.Password+";database="+ utils.ConfigValue.Database.Name+";"
+    } else {
+        connString = "server=localhost" + ";user id=" + ";database=" + utils.ConfigValue.Database.Name + ";trusted_connection=yes;"
+    }
+    fmt.Println("Connecting to database with connection string:", connString)
     sql_database, err := sql.Open("sqlserver", connString)
+    fmt.Println("Successfully connected to database")
     return sql_database, err
 }
 

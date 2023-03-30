@@ -22,6 +22,7 @@ type Config struct {
         Password string
         Name string
     }
+    Env string
 }
 
 var Repositories = map[string]*git.Repository{}
