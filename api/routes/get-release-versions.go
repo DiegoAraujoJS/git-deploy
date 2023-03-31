@@ -22,6 +22,20 @@ func GetReleaseVersions(w http.ResponseWriter, r *http.Request) {
 
 
 	repo := r.URL.Query().Get("repo")
+
+    // Pull from latest changes from origin before traversing the repo. Handle errors and send an error response if any when pulling.
+    err := navigation.Pull(repo)
+    if err != nil {
+        log.Println("Error while pulling from origin -> "+err.Error())
+        response, _ := json.Marshal(&FullResponse{
+            BranchResponse: nil,
+        })
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write(response)
+        return
+    }
+
 	response, err := json.Marshal(&FullResponse{
 		BranchResponse: navigation.GetReleaseBranchesWithTheirVersioning(repo),
 	})
