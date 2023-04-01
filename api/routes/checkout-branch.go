@@ -17,8 +17,6 @@ type CheckoutResponse struct {
 }
 
 func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
-
 	fmt.Println("checkout branch", r.URL.Query().Get("repo"), r.URL.Query().Get("commit"))
     repo := r.URL.Query().Get("repo")
 

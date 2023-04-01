@@ -36,11 +36,13 @@ func InsertVersionChangeEvent(repo string, hash string) error {
 }
 
 func insertRepo(database *sql.DB, repo string) {
-    statement, err := database.Prepare("INSERT INTO Repos (repo) VALUES ('" + repo + "')")
+    query := "INSERT INTO Repos (repo) VALUES ('" + repo + "')"
+    statement, err := database.Prepare(query)
     if err != nil {
         log.Println("Error trying to prepare INSERT statement: ", err.Error())
     }
     _, err = statement.Exec()
+    fmt.Println(query)
     if err != nil {
         log.Println("Error trying to execute INSERT statement: ", err.Error())
         return

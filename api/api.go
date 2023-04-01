@@ -12,15 +12,21 @@ import (
 const PORT = "3001"
 
 func ListenAndServe() {
-    http.HandleFunc("/getRepos", routes.GetRepos)
-	http.HandleFunc("/getTags", routes.GetReleaseVersions)
-	http.HandleFunc("/checkout", routes.CheckoutBranch)
-    http.HandleFunc("/repoHistory", routes.GetRepoHistory)
+    router := http.NewServeMux()
+
+    router.HandleFunc("/getRepos", routes.GetRepos)
+	router.HandleFunc("/getTags", routes.GetReleaseVersions)
+	router.HandleFunc("/checkout", routes.CheckoutBranch)
+    router.HandleFunc("/repoHistory", routes.GetRepoHistory)
+
+    handler := routes.EnableCorsMiddleware(router)
+
     if utils.ConfigValue.Port == "" {
         utils.ConfigValue.Port = PORT
     }
+
     fmt.Println("Listening on port " + utils.ConfigValue.Port)
-	err := http.ListenAndServe(":"+utils.ConfigValue.Port, nil)
+	err := http.ListenAndServe(":"+utils.ConfigValue.Port, handler)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

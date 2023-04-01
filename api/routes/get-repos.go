@@ -14,7 +14,6 @@ type Response struct {
 }
 
 func GetRepos(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
 	content, _ := ioutil.ReadFile("./config.json")
 	json.Unmarshal(content, &utils.ConfigValue)
 

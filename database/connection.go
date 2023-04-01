@@ -42,14 +42,14 @@ func CreateTables() {
 		log.Fatal("Error while creating table:", err.Error())
 	}
 
-	fmt.Println("Table 'Repos' created successfully!")
+	fmt.Println(createTableReposQuery)
 
 	_, err = db.Exec(createTableHistoryQuery)
 	if err != nil {
 		log.Fatal("Error while creating table:", err.Error())
 	}
 
-	fmt.Println("Table 'History' created successfully!")
+	fmt.Println(createTableHistoryQuery)
 
     for _, dir := range utils.ConfigValue.Directories {
         insertRepo(db, dir.Name)
@@ -86,5 +86,6 @@ func connectExecuteAndClose(query string) error {
         return err
 	}
     _, err = statement.Exec() // Execute SQL Statements
+    fmt.Println(query)
     return err
 }

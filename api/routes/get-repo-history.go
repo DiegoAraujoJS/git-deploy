@@ -10,7 +10,6 @@ import (
 
 // Uses the function database.SelectVersionChangeEvents to get all the version change events for a given repo. It builds a JSON that is a list of the same type as the return value of database.SelectVersionChangeEvents.
 func GetRepoHistory(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
     name := r.URL.Query().Get("repo")
     versionChangeEvents, err := database.SelectVersionChangeEvents(name)
     if err != nil {
