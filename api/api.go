@@ -9,7 +9,7 @@ import (
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
-const PORT = "3001"
+const PORT string = "3001"
 
 func ListenAndServe() {
     router := http.NewServeMux()
@@ -18,6 +18,7 @@ func ListenAndServe() {
 	router.HandleFunc("/getTags", routes.GetReleaseVersions)
 	router.HandleFunc("/checkout", routes.CheckoutBranch)
     router.HandleFunc("/repoHistory", routes.GetRepoHistory)
+    router.HandleFunc("/updateRepos", routes.UpdateRepos)
 
     handler := routes.EnableCorsMiddleware(router)
 

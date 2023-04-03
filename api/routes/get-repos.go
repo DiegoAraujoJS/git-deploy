@@ -9,10 +9,6 @@ import (
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
-type Response struct {
-	Repos []string
-}
-
 func GetRepos(w http.ResponseWriter, r *http.Request) {
 	content, _ := ioutil.ReadFile("./config.json")
 	json.Unmarshal(content, &utils.ConfigValue)
@@ -21,7 +17,9 @@ func GetRepos(w http.ResponseWriter, r *http.Request) {
 	for _, v := range utils.ConfigValue.Directories {
 		repos = append(repos, v.Name)
 	}
-	response, err := json.Marshal(&Response{
+	response, err := json.Marshal(&struct{
+        Repos []string
+    } {
 		Repos: repos,
 	})
 	if err != nil {
