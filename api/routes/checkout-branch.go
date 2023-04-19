@@ -17,19 +17,23 @@ type CheckoutResponse struct {
 }
 
 func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("checkout branch", r.URL.Query().Get("repo"), r.URL.Query().Get("commit"))
     repo := r.URL.Query().Get("repo")
+	fmt.Println("checkout branch", repo, r.URL.Query().Get("commit"))
 
 	checkout_result, err := navigation.Checkout(repo, r.URL.Query().Get("commit"))
 	if err != nil {
+        fmt.Println("Checkout error", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Error while moving to reference"))
+		w.Write([]byte(err.Error()))
+        return
 	}
 
     if build_err := builddeploy.Build(repo); build_err != nil {
         log.Println("Build error", build_err.Error())
+        w.Header().Set("Content-Type", "text")
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Error while building web application"))
+		w.Write([]byte(build_err.Error()))
+        return
 	}
 
     response := CheckoutResponse{
@@ -40,14 +44,16 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 
     if query_error := database.InsertVersionChangeEvent(repo, checkout_result.Hash().String()); query_error != nil {
         log.Println("Error while inserting version change event to version history", query_error.Error())
-        response.Errors["db_error"] = "An error ocurred while inserting the version change to version history."
+        w.Header().Set("Content-Type", "text")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(query_error.Error()))
     }
 
 	if res, err := json.Marshal(&response); err != nil {
 		log.Println(err.Error())
-	    w.Header().Set("Content-Type", "application/json")
+	    w.Header().Set("Content-Type", "text")
 	    w.WriteHeader(http.StatusInternalServerError)
-        w.Write([]byte("Internal error"))
+        w.Write([]byte(err.Error()))
 	} else {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusOK)

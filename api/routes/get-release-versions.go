@@ -16,7 +16,7 @@ func GetReleaseVersions(w http.ResponseWriter, r *http.Request) {
 	repo := r.URL.Query().Get("repo")
 
 	response, err := json.Marshal(&FullResponse{
-		BranchResponse: navigation.GetReleaseBranchesWithTheirVersioning(repo),
+		BranchResponse: navigation.GetAllCommits(repo),
 	})
 	if err != nil {
         log.Println("Error while getting release versions -> "+err.Error())

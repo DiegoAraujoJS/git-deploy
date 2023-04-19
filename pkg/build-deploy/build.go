@@ -1,8 +1,8 @@
 package builddeploy
 
 import (
+	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 )
@@ -11,15 +11,17 @@ import (
 func Build(repo string) error {
     script := "./scripts/" + repo + ".sh"
     if _, err := os.Stat(script); os.IsNotExist(err) {
-		fmt.Println(err.Error())
-        return err
+        payload := fmt.Errorf("file does not exist", fmt.Sprint(err))
+        return payload
 	}
 	cmd := exec.Command(script)
-	stdout, err := cmd.Output()
-	if err != nil {
-		log.Fatal("stdout error", err.Error())
-		return err
-	}
-	fmt.Println(string(stdout))
+    var out bytes.Buffer
+    var stderr bytes.Buffer
+    cmd.Stdout = &out
+    cmd.Stderr = &stderr
+    err := cmd.Run()
+    if err != nil {
+        return fmt.Errorf(fmt.Sprint(err) + ": " + stderr.String())
+    }
 	return err
 }
