@@ -2,8 +2,10 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
 )
@@ -13,6 +15,7 @@ type FullResponse struct {
 }
 
 func GetAllCommits(w http.ResponseWriter, r *http.Request) {
+    now := time.Now()
 	repo := r.URL.Query().Get("repo")
 
 	response, err := json.Marshal(&FullResponse{
@@ -25,4 +28,5 @@ func GetAllCommits(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
+    fmt.Println(r.URL.String(), time.Since(now).Seconds(), "sec.")
 }
