@@ -1,15 +1,32 @@
 package utils
 
-func BubbleSort [K any] (value []K, comparatorFunc func(n K, m K) bool) []K {
-    flag := false
-    for i := 0; i < len(value) - 1 ; i++ {
-        if comparatorFunc(value[i], value[i + 1]) {
-            flag = true
-            value[i], value[i + 1] = value[i + 1], value[i]
+func MergeSort [K any] (value []K, comparatorFunc func(a K, b K) bool) []K {
+    if len(value) < 2 {
+        return value
+    }
+
+    floor := int(len(value) / 2)
+    l1, l2 := MergeSort(value[:floor], comparatorFunc), MergeSort(value[floor:], comparatorFunc)
+
+    var merged []K
+    i, j := 0, 0
+    for i != len(l1) && j != len(l2) {
+        if comparatorFunc(l2[j], l1[i]) {
+            merged = append(merged, l2[j])
+            j++
+        } else {
+            merged = append(merged, l1[i])
+            i++
         }
     }
-    if flag {
-        return BubbleSort(value, comparatorFunc)
+
+    for ; i < len(l1) ; i++ {
+        merged = append(merged, l1[i])
     }
-    return value
+
+    for ; j < len(l2) ; j++ {
+        merged = append(merged, l2[j])
+    }
+
+    return merged
 }

@@ -12,7 +12,7 @@ type FullResponse struct {
 	*navigation.BranchResponse
 }
 
-func GetReleaseVersions(w http.ResponseWriter, r *http.Request) {
+func GetAllCommits(w http.ResponseWriter, r *http.Request) {
 	repo := r.URL.Query().Get("repo")
 
 	response, err := json.Marshal(&FullResponse{

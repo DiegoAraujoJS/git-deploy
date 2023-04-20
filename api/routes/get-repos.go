@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -10,9 +9,6 @@ import (
 )
 
 func GetRepos(w http.ResponseWriter, r *http.Request) {
-	content, _ := ioutil.ReadFile("./config.json")
-	json.Unmarshal(content, &utils.ConfigValue)
-
 	var repos []string
 	for _, v := range utils.ConfigValue.Directories {
 		repos = append(repos, v.Name)

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 	"github.com/go-git/go-git/v5"
 )
@@ -32,6 +33,7 @@ func UpdateRepos(w http.ResponseWriter, r *http.Request) {
         w.Write(json)
         return
     }
+    navigation.All_commits = map[string][]*navigation.Branch{}
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
     w.Write([]byte("Repositories updated successfully"))
