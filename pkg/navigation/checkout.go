@@ -19,6 +19,7 @@ func Checkout(repository string, hash string) (*plumbing.Reference, error) {
 
 	err = w.Checkout(&git.CheckoutOptions{
 		Hash: plumbing.NewHash(hash),
+        Force: true,
 	})
 	if err != nil {
 		return nil, err
