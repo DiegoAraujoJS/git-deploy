@@ -20,7 +20,9 @@ func ListenAndServe() {
     router.HandleFunc("/repoHistory", routes.GetRepoHistory)
     router.HandleFunc("/updateRepos", routes.UpdateRepos)
 
-    handler := routes.EnableCorsMiddleware(router)
+    handler := routes.EnableCorsMiddleware(
+        routes.VerifyPasswordMiddleware(router),
+    )
 
     if utils.ConfigValue.Port == "" {
         utils.ConfigValue.Port = PORT
