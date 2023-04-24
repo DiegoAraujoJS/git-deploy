@@ -18,7 +18,7 @@ func UpdateRepos(w http.ResponseWriter, r *http.Request) {
         wg.Add(1)
         go func(repo *git.Repository, name string) {
             log.Println("Updating repo", name)
-            if error := utils.ForceUpdateAllBranches(repo); error != nil && error != git.ErrRemoteNotFound {
+            if error := utils.ForceUpdateAllBranches(repo); error != nil && error != git.ErrRemoteNotFound && error != git.NoErrAlreadyUpToDate {
                 log.Println("Error updating repo", name, error)
                 errors = append(errors, error)
             }
@@ -33,7 +33,7 @@ func UpdateRepos(w http.ResponseWriter, r *http.Request) {
         w.Write(json)
         return
     }
-    navigation.All_commits = map[string][]*navigation.Branch{}
+    navigation.All_commits = map[string]*navigation.BranchResponse{}
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
     w.Write([]byte("Repositories updated successfully 👌"))
