@@ -24,7 +24,7 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
         fmt.Println("Checkout error", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		w.Write([]byte("🔴 " + err.Error()))
         return
 	}
 
@@ -32,7 +32,7 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
         log.Println("Build error", build_err.Error())
         w.Header().Set("Content-Type", "text")
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(build_err.Error()))
+		w.Write([]byte("🔴 " + build_err.Error()))
         return
 	}
 
@@ -46,7 +46,7 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
         log.Println("Error while inserting version change event to version history", query_error.Error())
         w.Header().Set("Content-Type", "text")
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(query_error.Error()))
+		w.Write([]byte("🔴 " + query_error.Error()))
     }
 
 	if res, err := json.Marshal(&response); err != nil {

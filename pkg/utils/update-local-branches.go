@@ -12,7 +12,7 @@ import (
 )
 
 // This function fetches origin with a Force flag set to true, which causes all local branches to be updated to match their remote counterparts. The function then iterates over the remote branches and force-updates the local branches accordingly.
-func ForceUpdateAllBranches(repo *git.Repository, name *string) error {
+func ForceUpdateAllBranches(repo *git.Repository) error {
 	// Fetch the remote
 	remote, err := repo.Remote("origin")
 	if err != nil {
@@ -32,9 +32,7 @@ func ForceUpdateAllBranches(repo *git.Repository, name *string) error {
 		Force:    true,
         Auth: public_key,
 	})
-    if err == git.NoErrAlreadyUpToDate {
-        return nil
-    }
+
 	if err != nil {
 		return err
 	}
