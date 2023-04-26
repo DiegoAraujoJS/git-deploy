@@ -2,6 +2,7 @@ package navigation
 
 import (
 	"log"
+	"strings"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 	"github.com/go-git/go-git/v5"
@@ -70,9 +71,8 @@ func GetAllCommits(repository string) *BranchResponse {
         })
         // Sort branches by name.
         All_commits[repository].Branches = utils.MergeSort(All_commits[repository].Branches, func(n string, m string) bool {
-            return n < m
+            return strings.ToLower(n) < strings.ToLower(m)
         })
-
     }
 
     head, _ := repo.Head()
