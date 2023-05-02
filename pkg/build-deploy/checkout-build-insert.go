@@ -8,17 +8,17 @@ import (
 )
 
 type Status struct {
-    Finished bool
-    Moment int8
-    Stdout *bytes.Buffer
-    Stderr *bytes.Buffer
+    Finished    bool
+    Moment      int8
+    Stdout      *bytes.Buffer
+    Stderr      *bytes.Buffer
 }
 
 type Action struct {
-    ID  int
-    Repo string
-    Hash string
-    Status *Status
+    ID      int
+    Repo    string
+    Hash    string
+    Status  *Status
 }
 
 var CheckoutBuildInsertChan = make(chan *Action)

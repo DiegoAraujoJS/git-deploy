@@ -16,11 +16,11 @@ type Config struct {
 		Directory string
 	}
     Database struct {
-        Server string
-        Port string
-        User string
-        Password string
-        Name string
+        Server      string
+        Port        string
+        User        string
+        Password    string
+        Name        string
     }
     Env string
     Credentials struct {

@@ -51,8 +51,8 @@ func insertRepo(database *sql.DB, repo string) {
 }
 
 type VersionChangeEvent struct {
-    Hash string
-    CreatedAt string
+    Hash        string
+    CreatedAt   string
 }
 
 // Gets all the version change events for a given repo. The format is a struct with the following form: {hash: string, createdAt: string}. It returns an error if repo does not exist or if fails to select.

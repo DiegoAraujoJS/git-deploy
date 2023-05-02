@@ -8,8 +8,8 @@ import (
 )
 
 type CheckoutResponse struct {
-    Errors map[string]string
-	Version string
+    Errors  map[string]string
+    Version string
 }
 
 func CheckoutBranch(w http.ResponseWriter, r *http.Request) {

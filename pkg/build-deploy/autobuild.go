@@ -8,10 +8,10 @@ import (
 )
 
 type AutobuildConfig struct {
-    Repo string
+    Repo    string
     Seconds int
-    Branch string
-    Status int8
+    Branch  string
+    Status  int8
 }
 
 var ActiveTimers = map[string]*AutobuildConfig{}

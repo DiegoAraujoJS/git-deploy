@@ -9,10 +9,10 @@ import (
 )
 
 type StatusResponse struct {
-    Finished bool
-    Moment string
-    Stdout string
-    Stderr string
+    Finished    bool
+    Moment      string
+    Stdout      string
+    Stderr      string
 }
 
 func GetStatus(w http.ResponseWriter, r *http.Request) {
