@@ -12,16 +12,16 @@ import (
 var All_commits map[string]*BranchResponse = map[string]*BranchResponse{}
 
 type Branch struct {
-	Commit       *object.Commit `json:"commit"`
-	NewReference string  `json:"new_reference"`
-    Branch []string `json:"branches"`
+    Commit          *object.Commit `json:"commit"`
+    NewReference    string  `json:"new_reference"`
+    Branch          []string `json:"branches"`
 }
 
 type BranchResponse struct {
-	Commits           []*Branch `json:"commits"`
-	CurrentVersion string    `json:"current_version"`
-    Head           *object.Commit    `json:"head"`
-    Branches       []string    `json:"branches"`
+    Commits         []*Branch `json:"commits"`
+    CurrentVersion  string    `json:"current_version"`
+    Head            *object.Commit    `json:"head"`
+    Branches        []string    `json:"branches"`
 }
 
 func GetAllCommits(repository string) *BranchResponse {

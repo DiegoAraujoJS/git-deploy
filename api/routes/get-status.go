@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -10,10 +9,10 @@ import (
 )
 
 type StatusResponse struct {
-    Errors []error
     Finished bool
     Moment string
     Stdout string
+    Stderr string
 }
 
 func GetStatus(w http.ResponseWriter, r *http.Request) {
@@ -21,12 +20,9 @@ func GetStatus(w http.ResponseWriter, r *http.Request) {
     int_ID, _ := strconv.Atoi(ID)
     action := builddeploy.ActionStatus[int_ID]
 
-    stdout := action.Status.Stdout.String()
-    fmt.Println(stdout)
-
     json, _ := json.Marshal(StatusResponse {
-        Stdout: stdout,
-        Errors: action.Status.Errors,
+        Stdout: action.Status.Stdout.String(),
+        Stderr: action.Status.Stderr.String(),
         Moment: builddeploy.StatusDict[action.Status.Moment],
         Finished: action.Status.Finished,
     })

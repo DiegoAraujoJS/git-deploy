@@ -20,6 +20,8 @@ func ListenAndServe() {
     router.HandleFunc("/repoHistory", routes.GetRepoHistory)
     router.HandleFunc("/updateRepos", routes.UpdateRepos)
     router.HandleFunc("/getStatus", routes.GetStatus)
+    router.HandleFunc("/addTimer", routes.AddTimer)
+    router.HandleFunc("/getTimers", routes.GetTimers)
 
     handler := routes.EnableCorsMiddleware(
         routes.VerifyPasswordMiddleware(router),

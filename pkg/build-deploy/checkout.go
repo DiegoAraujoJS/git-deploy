@@ -1,6 +1,7 @@
-package navigation
+package builddeploy
 
 import (
+	"bytes"
 	"log"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
@@ -8,7 +9,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
-func Checkout(repository string, hash string) (*plumbing.Reference, error) {
+func Checkout(repository string, hash string, stdout *bytes.Buffer) (*plumbing.Reference, error) {
 	repo := utils.GetRepository(repository)
 	w, err := repo.Worktree()
 
@@ -17,6 +18,7 @@ func Checkout(repository string, hash string) (*plumbing.Reference, error) {
 		return nil, err
 	}
 
+    stdout.WriteString("Checkout commit " + hash + "\n")
 	err = w.Checkout(&git.CheckoutOptions{
 		Hash: plumbing.NewHash(hash),
         Force: true,
@@ -26,6 +28,7 @@ func Checkout(repository string, hash string) (*plumbing.Reference, error) {
 	}
 
 	ref, err := repo.Head()
+    stdout.WriteString("Successfully changed repository head to " + ref.Hash().String() + "\n")
 	if err != nil {
 		log.Println("second error.", err.Error())
 		return nil, err

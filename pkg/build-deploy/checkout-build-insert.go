@@ -5,14 +5,13 @@ import (
 	"fmt"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/database"
-	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
 )
 
 type Status struct {
-    Errors []error
     Finished bool
     Moment int8
     Stdout *bytes.Buffer
+    Stderr *bytes.Buffer
 }
 
 type Action struct {
@@ -22,7 +21,7 @@ type Action struct {
     Status *Status
 }
 
-var CheckoutBuildInsertChan chan *Action = make(chan *Action)
+var CheckoutBuildInsertChan = make(chan *Action)
 
 var ActionStatus = map[int]*Action{}
 
@@ -31,11 +30,9 @@ var StatusDict = map[int8]string {
     1: "Checkout branch",
     2: "Building",
     3: "Registering build",
-    4: "Superposition of actions",
 }
 
 func init () {
-    fmt.Println("setup chan")
     go func () {
         for action := range CheckoutBuildInsertChan {
             fmt.Println("action recieved", action)
@@ -44,43 +41,48 @@ func init () {
     }()
 }
 
+const (
+    inactive = iota
+    checkout
+    building
+    registering
+)
+
 func checkoutBuildInsert(action *Action) error {
     ActionStatus[action.ID] = action
     action.Status = &Status{}
     for _, v := range ActionStatus {
-        if v.Repo == action.Repo && !v.Status.Finished && v.Status.Moment != 4 && v.ID != action.ID {
-            action.Status.Moment = 4
+        if v.Repo == action.Repo && v.Status.Moment != inactive && v.ID != action.ID {
             return nil
         }
     }
-    status := ActionStatus[action.ID].Status
-    status.Moment = 1
-	checkout_result, err := navigation.Checkout(action.Repo, action.Hash)
+    action.Status.Stdout, action.Status.Stderr = &bytes.Buffer{}, &bytes.Buffer{}
+    action.Status.Moment = checkout
+	checkout_result, err := Checkout(action.Repo, action.Hash, action.Status.Stdout)
     if err != nil {
-        status.Errors = []error{err}
+        action.Status.Moment = inactive
         return err
     }
-    status.Moment = 2
-    var out bytes.Buffer
-    status.Stdout = &out
-    build_err := Build(action.Repo, &out)
-    if build_err != nil {
-        status.Errors = []error{build_err}
+    action.Status.Moment = building
+    if build_err := Build(action.Repo, action.Status.Stdout, action.Status.Stderr); build_err != nil {
+        action.Status.Moment = inactive
         return build_err
     }
-    status.Moment = 3
+    action.Status.Moment = registering
     if query_error := database.InsertVersionChangeEvent(action.Repo, checkout_result.Hash().String()); query_error != nil {
-        status.Errors = []error{query_error}
+        action.Status.Moment = inactive
         return query_error
     }
-    status.Moment = 0
-    status.Finished = true
+    action.Status.Moment = inactive
+    action.Status.Finished = true
+    // We could free the memory occupied by the buffers like below, but data may be used for further fetching.
+    // action.Status.Stdout, action.Status.Stderr = nil, nil
     return nil
 }
 
 
 var GenerateActionID = func () func() int {
-    i := 1
+    i := 0
     return func () int {
         i = i + 1
         return i
