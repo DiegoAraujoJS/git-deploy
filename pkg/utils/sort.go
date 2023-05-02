@@ -6,26 +6,26 @@ func MergeSort [K any] (value []K, comparatorFunc func(a K, b K) bool) []K {
     }
 
     floor := int(len(value) / 2)
-    l1, l2 := MergeSort(value[:floor], comparatorFunc), MergeSort(value[floor:], comparatorFunc)
+    left_split, right_split := MergeSort(value[:floor], comparatorFunc), MergeSort(value[floor:], comparatorFunc)
 
-    var merged []K
+    var merged = make([]K, 0, len(value))
     i, j := 0, 0
-    for i != len(l1) && j != len(l2) {
-        if comparatorFunc(l2[j], l1[i]) {
-            merged = append(merged, l2[j])
+    for i != len(left_split) && j != len(right_split) {
+        if comparatorFunc(right_split[j], left_split[i]) {
+            merged = append(merged, right_split[j])
             j++
         } else {
-            merged = append(merged, l1[i])
+            merged = append(merged, left_split[i])
             i++
         }
     }
 
-    for ; i < len(l1) ; i++ {
-        merged = append(merged, l1[i])
+    for ; i < len(left_split) ; i++ {
+        merged = append(merged, left_split[i])
     }
 
-    for ; j < len(l2) ; j++ {
-        merged = append(merged, l2[j])
+    for ; j < len(right_split) ; j++ {
+        merged = append(merged, right_split[j])
     }
 
     return merged
