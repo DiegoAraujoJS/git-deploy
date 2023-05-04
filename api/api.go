@@ -21,6 +21,7 @@ func ListenAndServe() {
     router.HandleFunc("/updateRepos", routes.UpdateRepos)
     router.HandleFunc("/getStatus", routes.GetStatus)
     router.HandleFunc("/addTimer", routes.AddTimer)
+    router.HandleFunc("/deleteTimer", routes.DeleteTimer)
     router.HandleFunc("/getTimers", routes.GetTimers)
 
     handler := routes.EnableCorsMiddleware(

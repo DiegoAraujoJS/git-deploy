@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
+	git "github.com/go-git/go-git/v5"
 )
 
 type AutobuildConfig struct {
@@ -14,20 +15,32 @@ type AutobuildConfig struct {
     Status  int8
 }
 
-var ActiveTimers = map[string]*AutobuildConfig{}
+var ActiveTimers = map[string]*struct{
+    Timer   *time.Ticker
+    Config  *AutobuildConfig
+}{}
 
 var timers = map[string]*time.Timer{}
+
+const (
+    ready = iota
+    fetching
+    down
+)
 
 // The AddTimer function takes an action as parameter, and will add a timer that delivers the action to the checkoutBuildInsert channel continuously.
 func AddTimer(config *AutobuildConfig) *time.Ticker{
     new_chan := time.NewTicker(time.Duration(config.Seconds) * time.Second)
 
-    ActiveTimers[config.Repo] = config
+    ActiveTimers[config.Repo] = &struct{Timer *time.Ticker; Config *AutobuildConfig}{
+        Timer: new_chan,
+        Config: config,
+    }
 
     go func () {
         for t := range new_chan.C {
             fmt.Println(t, config)
-            if (config.Status == 0) {fetchAndSendAction(config)}
+            if (config.Status == ready) {fetchAndSendAction(config)}
         }
     }()
 
@@ -35,35 +48,38 @@ func AddTimer(config *AutobuildConfig) *time.Ticker{
 }
 
 func fetchAndSendAction(config *AutobuildConfig) error {
-    config.Status = 1
+    config.Status = fetching
     repo := utils.GetRepository(config.Repo)
-    head, _ := repo.Head()
-    actual_head := head.Hash()
-
-    fmt.Println("fetch and send action")
 
     branch, err := utils.GetBranch(repo, config.Branch)
     if err != nil {
+        config.Status = down
         return err
     }
-    fmt.Println("update branch")
-    ok, err := utils.UpdateBranch(repo, branch)
+    last_commit := branch.Hash().String()
+
+    err = utils.ForceUpdateAllBranches(repo)
+    if err == git.NoErrAlreadyUpToDate {
+        config.Status = ready
+        return err
+    }
     if err != nil {
         fmt.Println(err)
+        config.Status = down
         return err
     }
 
-    if actual_head == head.Hash() {return nil}
+    branch, _ = utils.GetBranch(repo, config.Branch)
+    new_commit := branch.Hash().String()
 
-    fmt.Println("ok",ok)
-    if ok {
+    if last_commit != new_commit {
         CheckoutBuildInsertChan <- &Action{
             ID: GenerateActionID(),
             Repo: config.Repo,
-            Hash: head.Hash().String(),
+            Hash: new_commit,
         }
     }
+    config.Status = ready
 
-    config.Status = 0
     return nil
 }
