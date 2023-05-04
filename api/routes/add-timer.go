@@ -26,11 +26,12 @@ func AddTimer(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusOK)
     w.Write([]byte("ok"))
 
-    builddeploy.AddTimer(&builddeploy.AutobuildConfig{
-        Repo: repo,
-        Seconds: secs,
-        Branch: branch,
-    })
+    // Temporarily disable the functionallity of this route.
+    // builddeploy.AddTimer(&builddeploy.AutobuildConfig{
+    //     Repo: repo,
+    //     Seconds: secs,
+    //     Branch: branch,
+    // })
 }
 
 func GetTimers(w http.ResponseWriter, r *http.Request) {
