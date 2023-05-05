@@ -6,16 +6,33 @@ import (
 	"strconv"
 
 	builddeploy "github.com/DiegoAraujoJS/webdev-git-server/pkg/build-deploy"
+	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
 func AddTimer(w http.ResponseWriter, r *http.Request) {
-    repo, branch, seconds := r.URL.Query().Get("repo"), r.URL.Query().Get("branch"), r.URL.Query().Get("seconds")
+    repo, ok := utils.Repositories[r.URL.Query().Get("repo")]
+    if !ok {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusNotAcceptable)
+        w.Write([]byte(`{"error": "Repository not found"}`))
+        return
+    }
 
+    branch := r.URL.Query().Get("branch")
+    _, err := utils.GetBranch(repo, branch)
+    if err != nil {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusNotAcceptable)
+        w.Write([]byte(`{"error": "Branch not found"}`))
+        return
+    }
+
+    seconds := r.URL.Query().Get("seconds")
     secs, err := strconv.Atoi(seconds)
     if err != nil || secs < 60 {
         w.Header().Set("Content-Type", "text")
         w.WriteHeader(http.StatusNotAcceptable)
-        w.Write([]byte("Format of \"seconds\" not correct or either has to be > 60"))
+        w.Write([]byte(`{"error": "Format of \"seconds\" not correct or either has to be > 60"}`))
         return
     }
 
@@ -24,7 +41,7 @@ func AddTimer(w http.ResponseWriter, r *http.Request) {
     w.Write([]byte("ok"))
 
     builddeploy.AddTimer(&builddeploy.AutobuildConfig{
-        Repo: repo,
+        Repo: r.URL.Query().Get("repo"),
         Seconds: secs,
         Branch: branch,
     })

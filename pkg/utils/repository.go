@@ -52,7 +52,3 @@ func Connect() {
 		Repositories[dir.Name] = r
 	}
 }
-
-func GetRepository(repo string) *git.Repository {
-	return Repositories[repo]
-}

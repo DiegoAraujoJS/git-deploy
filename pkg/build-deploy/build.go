@@ -23,6 +23,5 @@ func Build(repo string, stdout *bytes.Buffer, stderr *bytes.Buffer) error {
         stderr.WriteString(err.Error())
         return err
     }
-    stdout.WriteString("Successfully finished executing " + script)
 	return nil
 }

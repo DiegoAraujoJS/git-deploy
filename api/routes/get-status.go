@@ -17,18 +17,44 @@ type StatusResponse struct {
 
 func GetStatus(w http.ResponseWriter, r *http.Request) {
     ID := r.URL.Query().Get("ID")
-    int_ID, _ := strconv.Atoi(ID)
-    action := builddeploy.ActionStatus[int_ID]
+    int_ID, err := strconv.Atoi(ID)
 
-    json, _ := json.Marshal(StatusResponse {
+    if err != nil {
+        if config, ok := builddeploy.ActiveTimers[ID]; ok {
+            response, _ := json.Marshal(StatusResponse {
+                Stdout: config.Config.Stdout.String(),
+                Stderr: config.Config.Stderr.String(),
+            })
+
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusOK)
+            w.Write(response)
+            return
+        }
+    }
+
+    action, ok := builddeploy.ActionStatus[int_ID]
+    if action == nil || !ok {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusOK)
+        w.Write([]byte(`{"error": "Action not found"}`))
+        return
+    }
+
+    response, err := json.Marshal(StatusResponse{
+        Finished: action.Status.Finished,
+        Moment: builddeploy.StatusDict[action.Status.Moment],
         Stdout: action.Status.Stdout.String(),
         Stderr: action.Status.Stderr.String(),
-        Moment: builddeploy.StatusDict[action.Status.Moment],
-        Finished: action.Status.Finished,
     })
+    if err != nil {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusOK)
+        w.Write([]byte("Error parsing response"))
+        return
+    }
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(json)
-
+	w.Write(response)
 }

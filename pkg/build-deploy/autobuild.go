@@ -1,6 +1,7 @@
 package builddeploy
 
 import (
+	"bytes"
 	"fmt"
 	"time"
 
@@ -13,6 +14,8 @@ type AutobuildConfig struct {
     Seconds int
     Branch  string
     Status  int8
+    Stdout  *bytes.Buffer
+    Stderr  *bytes.Buffer
 }
 
 var ActiveTimers = map[string]*struct{
@@ -32,15 +35,27 @@ const (
 func AddTimer(config *AutobuildConfig) *time.Ticker{
     new_chan := time.NewTicker(time.Duration(config.Seconds) * time.Second)
 
+    config.Stdout, config.Stderr = &bytes.Buffer{}, &bytes.Buffer{}
     ActiveTimers[config.Repo] = &struct{Timer *time.Ticker; Config *AutobuildConfig}{
         Timer: new_chan,
         Config: config,
     }
 
+    stop_at := int((60 * 9) * (float32(60) / float32(config.Seconds)))
+    var ticks int
+
     go func () {
         for t := range new_chan.C {
             fmt.Println(t, config)
             if (config.Status == ready) {fetchAndSendAction(config)}
+
+            ticks++
+            if ticks == stop_at {
+                fmt.Println("Automatically stopping timer for", config.Repo)
+                new_chan.Stop()
+                delete(ActiveTimers, config.Repo)
+                return
+            }
         }
     }()
 
@@ -49,7 +64,7 @@ func AddTimer(config *AutobuildConfig) *time.Ticker{
 
 func fetchAndSendAction(config *AutobuildConfig) error {
     config.Status = fetching
-    repo := utils.GetRepository(config.Repo)
+    repo := utils.Repositories[config.Repo]
 
     branch, err := utils.GetBranch(repo, config.Branch)
     if err != nil {
@@ -61,11 +76,13 @@ func fetchAndSendAction(config *AutobuildConfig) error {
     err = utils.ForceUpdateAllBranches(repo)
     if err == git.NoErrAlreadyUpToDate {
         config.Status = ready
+        config.Stdout.WriteString(time.Now().Format("2006-01-02 15:04:05") + " - Already up to date\n")
         return err
     }
     if err != nil {
         fmt.Println(err)
         config.Status = down
+        config.Stderr.WriteString(time.Now().Format("2006-01-02 15:04:05") + " - Error fetching\n" + err.Error() + "\n")
         return err
     }
 
@@ -77,6 +94,10 @@ func fetchAndSendAction(config *AutobuildConfig) error {
             ID: GenerateActionID(),
             Repo: config.Repo,
             Hash: new_commit,
+            Status: &Status{
+                Stdout: config.Stdout,
+                Stderr: config.Stderr,
+            },
         }
     }
     config.Status = ready

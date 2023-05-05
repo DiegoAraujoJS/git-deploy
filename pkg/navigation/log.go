@@ -25,7 +25,7 @@ type BranchResponse struct {
 }
 
 func GetAllCommits(repository string) *BranchResponse {
-    repo := utils.GetRepository(repository)
+    repo := utils.Repositories[repository]
 
     if _, ok := All_commits[repository]; !ok {
         branches, err := repo.Branches()

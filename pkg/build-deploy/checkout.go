@@ -10,7 +10,7 @@ import (
 )
 
 func Checkout(repository string, hash string, stdout *bytes.Buffer) (*plumbing.Reference, error) {
-	repo := utils.GetRepository(repository)
+	repo := utils.Repositories[repository]
 	w, err := repo.Worktree()
 
 	if err != nil {

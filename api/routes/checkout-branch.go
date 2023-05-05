@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/build-deploy"
+	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
 type CheckoutResponse struct {
@@ -13,12 +14,19 @@ type CheckoutResponse struct {
 }
 
 func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
-    repo := r.URL.Query().Get("repo")
+    _, ok := utils.Repositories[r.URL.Query().Get("repo")]
+
+    if !ok {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusNotAcceptable)
+        w.Write([]byte(`{"error": "Repository not found"}`))
+        return
+    }
 
     action_id := builddeploy.GenerateActionID()
     builddeploy.CheckoutBuildInsertChan <- &builddeploy.Action{
         ID: action_id,
-        Repo: repo,
+        Repo: r.URL.Query().Get("repo"),
         Hash: r.URL.Query().Get("commit"),
     }
 

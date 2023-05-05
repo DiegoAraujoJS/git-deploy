@@ -2,12 +2,11 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
+	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
 type FullResponse struct {
@@ -15,11 +14,18 @@ type FullResponse struct {
 }
 
 func GetAllCommits(w http.ResponseWriter, r *http.Request) {
-    now := time.Now()
-	repo := r.URL.Query().Get("repo")
+	_, ok := utils.Repositories[r.URL.Query().Get("repo")]
+
+    if !ok {
+        log.Println("Error while getting release versions -> Repository not found" + r.URL.Query().Get("repo"))
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(403)
+        w.Write([]byte(`{"error": "Repository not found"}`))
+        return
+    }
 
 	response, err := json.Marshal(&FullResponse{
-		BranchResponse: navigation.GetAllCommits(repo),
+		BranchResponse: navigation.GetAllCommits(r.URL.Query().Get("repo")),
 	})
 	if err != nil {
         log.Println("Error while getting release versions -> "+err.Error())
@@ -28,5 +34,4 @@ func GetAllCommits(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
-    fmt.Println(r.URL.String(), time.Since(now).Seconds(), "sec.")
 }

@@ -18,7 +18,7 @@ type VersionChangeEventWithCommit struct {
 }
 
 func getCommit(repo, hash string) (*object.Commit, error) {
-    repoObj := utils.GetRepository(repo)
+    repoObj := utils.Repositories[repo]
     commit, err := repoObj.CommitObject(plumbing.NewHash(hash))
     if err != nil {
         return nil, err
@@ -28,15 +28,21 @@ func getCommit(repo, hash string) (*object.Commit, error) {
 
 // Uses the function database.SelectVersionChangeEvents to get all the version change events for a given repo. It builds a JSON that is a list of the same type as the return value of database.SelectVersionChangeEvents.
 func GetRepoHistory(w http.ResponseWriter, r *http.Request) {
-    name := r.URL.Query().Get("repo")
-    versionChangeEvents, err := database.SelectVersionChangeEvents(name)
+    _, ok := utils.Repositories[r.URL.Query().Get("repo")]
+    if !ok {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusNotAcceptable)
+        w.Write([]byte(`{"error": "Repository not found"}`))
+        return
+    }
+    versionChangeEvents, err := database.SelectVersionChangeEvents(r.URL.Query().Get("repo"))
     if err != nil {
         log.Println(err.Error())
         return
     }
     var versionChangeEventsWithCommit []*VersionChangeEventWithCommit
     for _, versionChangeEvent := range versionChangeEvents {
-        commit, err := getCommit(name, versionChangeEvent.Hash)
+        commit, err := getCommit(r.URL.Query().Get("repo"), versionChangeEvent.Hash)
         if err != nil {
             log.Println(err.Error())
             return
