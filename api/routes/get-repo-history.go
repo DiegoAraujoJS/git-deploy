@@ -45,7 +45,7 @@ func GetRepoHistory(w http.ResponseWriter, r *http.Request) {
         commit, err := getCommit(r.URL.Query().Get("repo"), versionChangeEvent.Hash)
         if err != nil {
             log.Println(err.Error())
-            return
+            continue
         }
         versionChangeEventsWithCommit = append(versionChangeEventsWithCommit, &VersionChangeEventWithCommit{
             Hash: versionChangeEvent.Hash,
