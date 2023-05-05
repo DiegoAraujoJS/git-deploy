@@ -76,12 +76,13 @@ func fetchAndSendAction(config *AutobuildConfig) error {
 
     err = utils.ForceUpdateAllBranches(repo)
     if err == git.NoErrAlreadyUpToDate {
+        fmt.Println("Already up to date")
         config.Status = ready
         config.Stdout.WriteString(time.Now().Format("2006-01-02 15:04:05") + " - Already up to date\n")
         return err
     }
     if err != nil {
-        fmt.Println(err)
+        fmt.Println("Error fetching", err.Error())
         config.Status = down
         config.Stderr.WriteString(time.Now().Format("2006-01-02 15:04:05") + " - Error fetching\n" + err.Error() + "\n")
         return err
@@ -92,6 +93,7 @@ func fetchAndSendAction(config *AutobuildConfig) error {
     branch, _ = utils.GetBranch(repo, config.Branch)
     new_commit := branch.Hash().String()
 
+    fmt.Println("Last commit:", last_commit, "New commit:", new_commit)
     if last_commit != new_commit {
         CheckoutBuildInsertChan <- &Action{
             ID: GenerateActionID(),

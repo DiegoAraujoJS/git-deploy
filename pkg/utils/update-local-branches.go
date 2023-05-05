@@ -18,7 +18,9 @@ var ssh_path string = os.Getenv("HOME") + "/.ssh/id_rsa"
 func ForceUpdateAllBranches(repo *git.Repository) error {
 	// Fetch the remote
 	remote, err := repo.Remote("origin")
+
 	if err != nil {
+        fmt.Println("Error getting remote", err)
 		return err
 	}
 
@@ -42,6 +44,7 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
 	})
 
 	if err != nil {
+        fmt.Println("Error fetching remote", err)
 		return err
 	}
 
@@ -56,6 +59,7 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
 		// Resolve the commit for the remote branch
 		commit, err := repo.CommitObject(ref.Hash())
 		if err != nil {
+            fmt.Println("Error getting commit object", err)
 			return err
 		}
 
