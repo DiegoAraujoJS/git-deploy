@@ -45,8 +45,7 @@ func AddTimer(config *AutobuildConfig) *time.Ticker{
     var ticks int
 
     go func () {
-        for t := range new_chan.C {
-            fmt.Println(t, config)
+        for range new_chan.C {
             if (config.Status == ready) {fetchAndSendAction(config)}
 
             ticks++
