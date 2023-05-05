@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 	git "github.com/go-git/go-git/v5"
 )
@@ -85,6 +86,8 @@ func fetchAndSendAction(config *AutobuildConfig) error {
         config.Stderr.WriteString(time.Now().Format("2006-01-02 15:04:05") + " - Error fetching\n" + err.Error() + "\n")
         return err
     }
+    // We reset the map below to re-populate the commits.
+    navigation.All_commits = map[string]*navigation.BranchResponse{}
 
     branch, _ = utils.GetBranch(repo, config.Branch)
     new_commit := branch.Hash().String()
