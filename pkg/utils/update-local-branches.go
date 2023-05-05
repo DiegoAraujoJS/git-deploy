@@ -12,7 +12,7 @@ import (
 )
 
 var public_key *ssh.PublicKeys
-var ssh_path string = os.Getenv("HOME") + "/.ssh/id_ed25519"
+var ssh_path string = os.Getenv("HOME") + "/.ssh/id_rsa"
 
 // This function fetches origin with a Force flag set to true, which causes all local branches to be updated to match their remote counterparts. The function then iterates over the remote branches and force-updates the local branches accordingly.
 func ForceUpdateAllBranches(repo *git.Repository) error {
