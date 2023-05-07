@@ -8,7 +8,9 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
-// Config is the struct that holds the configuration for the git repositories. The configuration is read from a json file that is located in the root of the project. For deployment, the config.json is located on the same folder as the binary.
+// Config is the struct that holds the configuration for the git repositories. 
+//
+// The configuration is read from a json file that is located in the root of the project. For deployment, the config.json is located on the same folder as the binary.
 type Config struct {
     Port string
 	Directories []struct {
@@ -24,7 +26,8 @@ type Config struct {
     }
     Env string
     Credentials struct {
-        Password string
+        Password    string
+        Ssh         string
     }
 }
 

@@ -11,7 +11,9 @@ import (
 // We cache the ids for avoiding to make constant connections and queries to the db.
 var id_cache = map[string]int{}
 
-// Inserts a row into the database with a version change event. It returns an error if repo does not exist or if fails to insert. It also caches the repo ids.
+// Inserts a row into the database with a version change event. 
+// 
+// It returns an error if repo does not exist or if fails to insert. It also caches the repo ids.
 func InsertVersionChangeEvent(repo string, hash string) error {
     _, ok := id_cache[repo]
     fmt.Println("Inserting version change event for repo: " + repo, ok)
@@ -59,13 +61,6 @@ type VersionChangeEvent struct {
 func SelectVersionChangeEvents(repo string) ([]*VersionChangeEvent, error) {
     var repoId int
     database, _ := Connect()
-    query := "SELECT id FROM Repos WHERE repo = '" + repo + "'"
-    if err := database.QueryRow(query).Scan(&repoId); err != nil {
-        if err == sql.ErrNoRows {
-            fmt.Println("Failed to execute "+ query + "'", "No row that verifies condition.")
-        }
-        return nil, err
-    }
     rows, err := database.Query("SELECT hash, createdAt FROM History WHERE repoId = " + strconv.Itoa(repoId) + " ORDER BY createdAt DESC")
     if err != nil {
         log.Println(err.Error())
@@ -77,7 +72,7 @@ func SelectVersionChangeEvents(repo string) ([]*VersionChangeEvent, error) {
         var createdAt string
         if err := rows.Scan(&hash, &createdAt); err != nil {
             log.Println(err.Error())
-            return nil, err
+            continue
         }
         versionChangeEvents = append(versionChangeEvents, &VersionChangeEvent{Hash: hash, CreatedAt: createdAt})
     }

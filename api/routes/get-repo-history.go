@@ -45,6 +45,7 @@ func GetRepoHistory(w http.ResponseWriter, r *http.Request) {
         commit, err := getCommit(r.URL.Query().Get("repo"), versionChangeEvent.Hash)
         if err != nil {
             log.Println(err.Error())
+            // We continue instead of returning mainly because we don't want to stop the loop if there is an error getting a commit. We just want to ignore that commit.
             continue
         }
         versionChangeEventsWithCommit = append(versionChangeEventsWithCommit, &VersionChangeEventWithCommit{

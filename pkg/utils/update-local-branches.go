@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
@@ -12,7 +11,6 @@ import (
 )
 
 var public_key *ssh.PublicKeys
-var ssh_path string = os.Getenv("HOME") + "/.ssh/id_rsa"
 
 // This function fetches origin with a Force flag set to true, which causes all local branches to be updated to match their remote counterparts. The function then iterates over the remote branches and force-updates the local branches accordingly.
 func ForceUpdateAllBranches(repo *git.Repository) error {
@@ -25,9 +23,9 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
 	}
 
     if public_key == nil {
-        ssh_key, _ := ioutil.ReadFile(ssh_path)
+        ssh_key, _ := ioutil.ReadFile(ConfigValue.Credentials.Ssh)
         if err != nil {
-            fmt.Println("Error reading private key from " + ssh_path, err)
+            fmt.Println("Error reading private key from " + ConfigValue.Credentials.Ssh, err)
             return err
         }
         public_key, err = ssh.NewPublicKeys("git", []byte(ssh_key), "")
