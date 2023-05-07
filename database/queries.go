@@ -10,13 +10,8 @@ import (
 
 // We cache the ids for avoiding to make constant connections and queries to the db.
 var id_cache = map[string]int{}
-
-// Inserts a row into the database with a version change event. 
-// 
-// It returns an error if repo does not exist or if fails to insert. It also caches the repo ids.
-func InsertVersionChangeEvent(repo string, hash string) error {
+func getRepoId (repo string) (int, error) {
     _, ok := id_cache[repo]
-    fmt.Println("Inserting version change event for repo: " + repo, ok)
     if !ok {
         var repoId int
         database, _ := Connect()
@@ -25,11 +20,21 @@ func InsertVersionChangeEvent(repo string, hash string) error {
             if err == sql.ErrNoRows {
                 fmt.Println("Failed to execute "+ query + "'", "No row that verifies condition.")
             }
-            return err
+            return 0, err
         }
         id_cache[repo] = repoId
     }
-    err := connectExecuteAndClose("INSERT INTO History (hash, createdAt, repoId) VALUES ('" + hash + "','" + time.Now().String() + "'," + strconv.Itoa(id_cache[repo]) + ")")
+    return id_cache[repo], nil
+}
+// Inserts a row into the database with a version change event. 
+// 
+// It returns an error if repo does not exist or if fails to insert. It also caches the repo ids.
+func InsertVersionChangeEvent(repo string, hash string) error {
+    repo_id, err := getRepoId(repo)
+    if err != nil {
+        return err
+    }
+    err = connectExecuteAndClose("INSERT INTO History (hash, createdAt, repoId) VALUES ('" + hash + "','" + time.Now().String() + "'," + strconv.Itoa(repo_id) + ")")
     if err != nil {
         log.Println("Error trying to execute INSERT statement: ", err.Error())
         return err
@@ -59,7 +64,10 @@ type VersionChangeEvent struct {
 
 // Gets all the version change events for a given repo. The format is a struct with the following form: {hash: string, createdAt: string}. It returns an error if repo does not exist or if fails to select.
 func SelectVersionChangeEvents(repo string) ([]*VersionChangeEvent, error) {
-    var repoId int
+    repoId, err := getRepoId(repo)
+    if err != nil {
+        return nil, err
+    }
     database, _ := Connect()
     rows, err := database.Query("SELECT hash, createdAt FROM History WHERE repoId = " + strconv.Itoa(repoId) + " ORDER BY createdAt DESC")
     if err != nil {
