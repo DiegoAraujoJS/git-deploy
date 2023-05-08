@@ -1,7 +1,6 @@
 package builddeploy
 
 import (
-	"bytes"
 	"log"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
@@ -9,28 +8,32 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
-func Checkout(repository string, hash string, stdout *bytes.Buffer) (*plumbing.Reference, error) {
-	repo := utils.Repositories[repository]
+func Checkout(action *Action) (*plumbing.Reference, error) {
+	repo := utils.Repositories[action.Repo]
 	w, err := repo.Worktree()
 
 	if err != nil {
-		log.Println("first error. ", err.Error())
+        log.Println("Error while getting repository worktree -> "+err.Error())
+        action.Status.Stderr.WriteString(err.Error())
 		return nil, err
 	}
 
-    stdout.WriteString("Checkout commit " + hash + "\n")
+    action.Status.Stdout.WriteString("Checkout commit " + action.Hash + "\n")
 	err = w.Checkout(&git.CheckoutOptions{
-		Hash: plumbing.NewHash(hash),
+		Hash: plumbing.NewHash(action.Hash),
         Force: true,
 	})
 	if err != nil {
+        log.Println("Error while checking out commit -> "+err.Error())
+        action.Status.Stderr.WriteString(err.Error())
 		return nil, err
 	}
 
 	ref, err := repo.Head()
-    stdout.WriteString("Successfully changed repository head to " + ref.Hash().String() + "\n")
+    action.Status.Stdout.WriteString("Successfully changed repository head to " + ref.Hash().String() + "\n")
 	if err != nil {
-		log.Println("second error.", err.Error())
+        log.Println("Error while getting repository head -> "+err.Error())
+        action.Status.Stderr.WriteString(err.Error())
 		return nil, err
 	}
 

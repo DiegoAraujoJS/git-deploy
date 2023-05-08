@@ -2,6 +2,7 @@ package builddeploy
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/database"
 )
@@ -34,6 +35,7 @@ var StatusDict = map[int8]string {
 func init () {
     go func () {
         for action := range CheckoutBuildInsertChan {
+            fmt.Println("Received action", action.ID, action.Repo, action.Hash)
             go checkoutBuildInsert(action)
         }
     }()
@@ -57,14 +59,14 @@ func checkoutBuildInsert(action *Action) error {
     if action.Status.Stdout == nil { action.Status.Stdout = &bytes.Buffer{} }
     if action.Status.Stderr == nil { action.Status.Stderr = &bytes.Buffer{} }
     action.Status.Moment = checkout
-	checkout_result, err := Checkout(action.Repo, action.Hash, action.Status.Stdout)
+	checkout_result, err := Checkout(action)
     if err != nil {
         action.Status.Moment = inactive
         action.Status.Stderr.WriteString(err.Error())
         return err
     }
     action.Status.Moment = building
-    if build_err := Build(action.Repo, action.Status.Stdout, action.Status.Stderr); build_err != nil {
+    if build_err := Build(action); build_err != nil {
         action.Status.Moment = inactive
         return build_err
     }
