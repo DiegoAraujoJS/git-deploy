@@ -2,7 +2,7 @@ package builddeploy
 
 import (
 	"bytes"
-	"fmt"
+	"log"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/database"
 )
@@ -35,7 +35,7 @@ var StatusDict = map[int8]string {
 func init () {
     go func () {
         for action := range CheckoutBuildInsertChan {
-            fmt.Println("Received action", action.ID, action.Repo, action.Hash)
+            log.Println("Received action", action.ID, action.Repo, action.Hash)
             go checkoutBuildInsert(action)
         }
     }()
