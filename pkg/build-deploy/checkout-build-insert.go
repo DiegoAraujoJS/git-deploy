@@ -78,6 +78,7 @@ func checkoutBuildInsert(action *Action) error {
     }
     action.Status.Moment = inactive
     action.Status.Finished = true
+    action.Status.Stdout.WriteString("Finished deploying " + action.Repo + " at commit " + action.Hash + ". A new version change event was registered.")
     // We could free the memory occupied by the buffers like below, but data may be used for further fetching.
     // action.Status.Stdout, action.Status.Stderr = nil, nil
     return nil

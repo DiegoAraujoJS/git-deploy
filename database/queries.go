@@ -10,6 +10,9 @@ import (
 
 // We cache the ids for avoiding to make constant connections and queries to the db.
 var id_cache = map[string]int{}
+// We cache the versions for avoiding to make constant connections and queries to the db.
+var version_cache = map[string][]*VersionChangeEvent{}
+
 func getRepoId (repo string) (int, error) {
     _, ok := id_cache[repo]
     if !ok {
@@ -39,6 +42,7 @@ func InsertVersionChangeEvent(repo string, hash string) error {
         log.Println("Error trying to execute INSERT statement: ", err.Error())
         return err
     }
+    delete(version_cache, repo)
     return nil
 }
 
@@ -62,11 +66,16 @@ type VersionChangeEvent struct {
     CreatedAt   string
 }
 
-// Gets all the version change events for a given repo. The format is a struct with the following form: {hash: string, createdAt: string}. It returns an error if repo does not exist or if fails to select.
+// Gets all the version change events for a given repo.
+//
+// The format is a struct with the following form: {Hash: string, CreatedAt: string}. It returns an error if repo does not exist or if fails to select.
 func SelectVersionChangeEvents(repo string) ([]*VersionChangeEvent, error) {
     repoId, err := getRepoId(repo)
     if err != nil {
         return nil, err
+    }
+    if response, ok := version_cache[repo]; ok {
+        return response, nil
     }
     database, _ := Connect()
     rows, err := database.Query("SELECT hash, createdAt FROM History WHERE repoId = " + strconv.Itoa(repoId) + " ORDER BY createdAt DESC")
@@ -84,5 +93,6 @@ func SelectVersionChangeEvents(repo string) ([]*VersionChangeEvent, error) {
         }
         versionChangeEvents = append(versionChangeEvents, &VersionChangeEvent{Hash: hash, CreatedAt: createdAt})
     }
+    version_cache[repo] = versionChangeEvents
     return versionChangeEvents, nil
 }

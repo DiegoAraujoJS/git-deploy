@@ -27,10 +27,8 @@ func UpdateRepos(w http.ResponseWriter, r *http.Request) {
     }
     wg.Wait()
     if len(errors) != 0 {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(401)
         json, _ := json.Marshal(errors)
-        w.Write(json)
+        WriteError(&w, string(json), http.StatusInternalServerError)
         return
     }
     navigation.All_commits = map[string]*navigation.BranchResponse{}
