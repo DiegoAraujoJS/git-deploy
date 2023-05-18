@@ -47,13 +47,13 @@ func GetAllCommits(repository string) *BranchResponse {
             for {
                 commit, err := log.Next()
                 if commit == nil || err != nil { break }
-                if _, ok := commits_map[commit.Hash.String()] ; !ok {
-                    commits_map[commit.Hash.String()] = &Branch{
-                        Commit: commit,
-                        Branch: []string{branch.Name().Short()},
-                    }
-                } else {
-                    commits_map[commit.Hash.String()].Branch = append(commits_map[commit.Hash.String()].Branch, branch.Name().Short())
+                if payload, ok := commits_map[commit.Hash.String()] ; ok {
+                    payload.Branch = append(payload.Branch, branch.Name().Short())
+                    continue
+                }
+                commits_map[commit.Hash.String()] = &Branch{
+                    Commit: commit,
+                    Branch: []string{branch.Name().Short()},
                 }
             }
         }

@@ -61,14 +61,14 @@ func Connect() (*sql.DB, error) {
     if sql_database != nil {
         return sql_database, nil
     }
-    var connString string
+    var conn_string string
     if utils.ConfigValue.Env == "dev" {
-        connString = "server="+utils.ConfigValue.Database.Server+";user id="+utils.ConfigValue.Database.User+";password="+ utils.ConfigValue.Database.Password+";database="+ utils.ConfigValue.Database.Name+";"
+        conn_string = "server="+utils.ConfigValue.Database.Server+";user id="+utils.ConfigValue.Database.User+";password="+ utils.ConfigValue.Database.Password+";database="+ utils.ConfigValue.Database.Name+";"
     } else {
-        connString = "server=localhost" + ";user id=" + ";database=" + utils.ConfigValue.Database.Name + ";trusted_connection=yes;"
+        conn_string = "server=localhost" + ";user id=" + ";database=" + utils.ConfigValue.Database.Name + ";trusted_connection=yes;"
     }
-    fmt.Println("Connecting to database with connection string:", connString)
-    new_sql_database, err := sql.Open("sqlserver", connString)
+    fmt.Println("Connecting to database with connection string:", conn_string)
+    new_sql_database, err := sql.Open("sqlserver", conn_string)
     if err != nil {
         log.Println("Error while opening database connection:", err.Error())
         return nil, err

@@ -17,6 +17,7 @@ type AutobuildConfig struct {
     Status  int8
     Stdout  *bytes.Buffer
     Stderr  *bytes.Buffer
+    LastFetch time.Time
 }
 
 var ActiveTimers = map[string]*struct{
@@ -36,31 +37,34 @@ const (
 func AddTimer(config *AutobuildConfig) *time.Ticker{
     new_chan := time.NewTicker(time.Duration(config.Seconds) * time.Second)
 
-    config.Stdout, config.Stderr = &bytes.Buffer{}, &bytes.Buffer{}
+    if config.Stdout == nil { config.Stdout = &bytes.Buffer{} }
+    if config.Stderr == nil { config.Stderr = &bytes.Buffer{} }
     ActiveTimers[config.Repo] = &struct{Timer *time.Ticker; Config *AutobuildConfig}{
         Timer: new_chan,
         Config: config,
     }
-
-    stop_at := int((60 * 9) * (float32(60) / float32(config.Seconds)))
-    var ticks int
 
     go func () {
         for t := range new_chan.C {
             fmt.Println(t, "Tick", config.Repo)
             if (config.Status == ready) {fetchAndSendAction(config)}
 
-            ticks++
-            if ticks == stop_at {
+            if config.LastFetch.Add(time.Duration(24) * time.Hour).Before(time.Now()) {
                 fmt.Println("Automatically stopping timer for", config.Repo)
-                new_chan.Stop()
-                delete(ActiveTimers, config.Repo)
+                DeleteTimer(config.Repo)
                 return
             }
         }
     }()
 
     return new_chan
+}
+
+func DeleteTimer(repo string) {
+    if timer, ok := ActiveTimers[repo]; ok {
+        timer.Timer.Stop()
+        delete(ActiveTimers, repo)
+    }
 }
 
 func fetchAndSendAction(config *AutobuildConfig) error {
@@ -93,8 +97,12 @@ func fetchAndSendAction(config *AutobuildConfig) error {
     branch, _ = utils.GetBranch(repo, config.Branch)
     new_commit := branch.Hash().String()
 
-    fmt.Println("Last commit:", last_commit, "New commit:", new_commit)
     if last_commit != new_commit {
+        register := time.Now().Format("2006-01-02 15:04:05") + last_commit + " --> " + new_commit + "\n"
+        config.LastFetch = time.Now()
+        fmt.Println(register)
+        config.Stdout.WriteString(register)
+
         CheckoutBuildInsertChan <- &Action{
             ID: GenerateActionID(),
             Repo: config.Repo,

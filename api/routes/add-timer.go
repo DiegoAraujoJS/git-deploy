@@ -12,27 +12,21 @@ import (
 func AddTimer(w http.ResponseWriter, r *http.Request) {
     repo, ok := utils.Repositories[r.URL.Query().Get("repo")]
     if !ok {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusNotAcceptable)
-        w.Write([]byte(`{"error": "Repository not found"}`))
+        WriteError(&w, "Repository not found", http.StatusNotAcceptable)
         return
     }
 
     branch := r.URL.Query().Get("branch")
     _, err := utils.GetBranch(repo, branch)
     if err != nil {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusNotAcceptable)
-        w.Write([]byte(`{"error": "Branch not found"}`))
+        WriteError(&w, "Branch not found", http.StatusNotAcceptable)
         return
     }
 
     seconds := r.URL.Query().Get("seconds")
     secs, err := strconv.Atoi(seconds)
     if err != nil || secs < 60 {
-        w.Header().Set("Content-Type", "text")
-        w.WriteHeader(http.StatusNotAcceptable)
-        w.Write([]byte(`{"error": "Format of \"seconds\" not correct or either has to be > 60"}`))
+        WriteError(&w, "Format of \"seconds\" not correct or either has to be greater than or equal to 60", http.StatusNotAcceptable)
         return
     }
 
@@ -50,16 +44,14 @@ func AddTimer(w http.ResponseWriter, r *http.Request) {
 func DeleteTimer(w http.ResponseWriter, r *http.Request) {
     repo := r.URL.Query().Get("repo")
 
-    if timer, ok := builddeploy.ActiveTimers[repo]; ok {
-
-        timer.Timer.Stop()
-        delete(builddeploy.ActiveTimers, repo)
+    if _, ok := builddeploy.ActiveTimers[repo]; ok {
+        builddeploy.DeleteTimer(repo)
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusOK)
+        w.Write([]byte("ok"))
+        return
     }
-
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusOK)
-    w.Write([]byte("ok"))
-
+    WriteError(&w, "Timer not found", http.StatusNotAcceptable)
 }
 
 func GetTimers(w http.ResponseWriter, r *http.Request) {

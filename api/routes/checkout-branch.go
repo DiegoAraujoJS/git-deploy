@@ -17,9 +17,7 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
     _, ok := utils.Repositories[r.URL.Query().Get("repo")]
 
     if !ok {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusNotAcceptable)
-        w.Write([]byte(`{"error": "Repository not found"}`))
+        WriteError(&w, "Repository not found", http.StatusNotAcceptable)
         return
     }
 

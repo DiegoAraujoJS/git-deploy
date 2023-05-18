@@ -15,6 +15,7 @@ type StatusResponse struct {
     Stderr      string
 }
 
+
 func GetStatus(w http.ResponseWriter, r *http.Request) {
     ID := r.URL.Query().Get("ID")
     int_ID, err := strconv.Atoi(ID)
@@ -31,13 +32,13 @@ func GetStatus(w http.ResponseWriter, r *http.Request) {
             w.Write(response)
             return
         }
+        WriteError(&w, "No timer active for " + ID, http.StatusNotAcceptable)
+        return
     }
 
     action, ok := builddeploy.ActionStatus[int_ID]
     if action == nil || !ok {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusOK)
-        w.Write([]byte(`{"error": "Action not found"}`))
+        WriteError(&w, "Action not found", http.StatusNotAcceptable)
         return
     }
 
@@ -48,9 +49,7 @@ func GetStatus(w http.ResponseWriter, r *http.Request) {
         Stderr: action.Status.Stderr.String(),
     })
     if err != nil {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusOK)
-        w.Write([]byte("Error parsing response"))
+        WriteError(&w, "Error parsing response", http.StatusOK)
         return
     }
 

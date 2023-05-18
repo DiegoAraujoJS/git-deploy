@@ -18,9 +18,7 @@ func GetAllCommits(w http.ResponseWriter, r *http.Request) {
 
     if !ok {
         log.Println("Error while getting release versions -> Repository not found" + r.URL.Query().Get("repo"))
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(403)
-        w.Write([]byte(`{"error": "Repository not found"}`))
+        WriteError(&w, "Repository not found", 403)
         return
     }
 
