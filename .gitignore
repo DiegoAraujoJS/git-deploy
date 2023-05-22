@@ -1,3 +1,4 @@
 config.json
 scripts
 git-history.db
+.DS_Store

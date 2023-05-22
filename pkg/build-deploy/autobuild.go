@@ -104,7 +104,6 @@ func fetchAndSendAction(config *AutobuildConfig) error {
         config.Stdout.WriteString(register)
 
         CheckoutBuildInsertChan <- &Action{
-            ID: GenerateActionID(),
             Repo: config.Repo,
             Hash: new_commit,
             Status: &Status{

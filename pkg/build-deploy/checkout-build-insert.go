@@ -49,6 +49,7 @@ const (
 )
 
 func checkoutBuildInsert(action *Action) error {
+    if action.ID == 0 { action.ID = GenerateActionID() }
     ActionStatus[action.ID] = action
     if action.Status == nil { action.Status = &Status{} }
     for _, v := range ActionStatus {

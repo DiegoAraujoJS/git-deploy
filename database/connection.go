@@ -65,7 +65,7 @@ func Connect() (*sql.DB, error) {
     if utils.ConfigValue.Env == "dev" {
         conn_string = "server="+utils.ConfigValue.Database.Server+";user id="+utils.ConfigValue.Database.User+";password="+ utils.ConfigValue.Database.Password+";database="+ utils.ConfigValue.Database.Name+";"
     } else {
-        conn_string = "server=localhost" + ";user id=" + ";database=" + utils.ConfigValue.Database.Name + ";trusted_connection=yes;"
+        conn_string = "server=" + utils.ConfigValue.Database.Server + ";user id=" + ";database=" + utils.ConfigValue.Database.Name + ";trusted_connection=yes;"
     }
     fmt.Println("Connecting to database with connection string:", conn_string)
     new_sql_database, err := sql.Open("sqlserver", conn_string)

@@ -21,14 +21,14 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    action_id := builddeploy.GenerateActionID()
-    builddeploy.CheckoutBuildInsertChan <- &builddeploy.Action{
-        ID: action_id,
+    action := &builddeploy.Action{
         Repo: r.URL.Query().Get("repo"),
         Hash: r.URL.Query().Get("commit"),
     }
 
+    builddeploy.CheckoutBuildInsertChan <- action
+
     w.Header().Set("Content-Type", "text")
     w.WriteHeader(http.StatusOK)
-    w.Write([]byte(strconv.Itoa(action_id)))
+    w.Write([]byte(strconv.Itoa(action.ID)))
 }
