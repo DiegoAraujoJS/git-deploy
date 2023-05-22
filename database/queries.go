@@ -17,7 +17,10 @@ func getRepoId (repo string) (int, error) {
     _, ok := id_cache[repo]
     if !ok {
         var repoId int
-        database, _ := Connect()
+        database, err := Connect()
+        if err != nil {
+            return 0, err
+        }
         query := "SELECT id FROM Repos WHERE repo = '" + repo + "'"
         if err := database.QueryRow(query).Scan(&repoId); err != nil {
             if err == sql.ErrNoRows {
@@ -77,7 +80,10 @@ func SelectVersionChangeEvents(repo string) ([]*VersionChangeEvent, error) {
     if response, ok := version_cache[repo]; ok {
         return response, nil
     }
-    database, _ := Connect()
+    database, err := Connect()
+    if err != nil {
+        return nil, err
+    }
     rows, err := database.Query("SELECT hash, createdAt FROM History WHERE repoId = " + strconv.Itoa(repoId) + " ORDER BY createdAt DESC")
     if err != nil {
         log.Println(err.Error())

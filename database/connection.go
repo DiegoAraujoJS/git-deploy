@@ -11,16 +11,17 @@ import (
 
 var sql_database *sql.DB
 
-
 func CreateTables() {
 	db, err := Connect()
 	if err != nil {
-		log.Fatal("Error while opening database connection:", err.Error())
+		log.Println("Error while opening database connection:", err.Error())
+        return
 	}
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Error while pinging database:", err.Error())
+		log.Println("Error while pinging database:", err.Error())
+        return
 	}
 
 	createTableReposQuery := `IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Repos' and xtype='U') CREATE TABLE Repos (
@@ -79,7 +80,10 @@ func Connect() (*sql.DB, error) {
 }
 
 func connectExecuteAndClose(query string) error {
-	sql_database, _ := Connect()
+	sql_database, err := Connect()
+    if err != nil {
+        return err
+    }
 	statement, err := sql_database.Prepare(query)
 	if err != nil {
 		log.Println(err.Error())
