@@ -35,7 +35,6 @@ var StatusDict = map[int8]string {
 func init () {
     go func () {
         for action := range CheckoutBuildInsertChan {
-            log.Println("Received action", action.ID, action.Repo, action.Hash)
             go checkoutBuildInsert(action)
         }
     }()
@@ -50,6 +49,7 @@ const (
 
 func checkoutBuildInsert(action *Action) error {
     if action.ID == 0 { action.ID = GenerateActionID() }
+    log.Println("Received action", action.ID, action.Repo, action.Hash)
     ActionStatus[action.ID] = action
     if action.Status == nil { action.Status = &Status{} }
     for _, v := range ActionStatus {
@@ -79,9 +79,6 @@ func checkoutBuildInsert(action *Action) error {
     }
     action.Status.Moment = inactive
     action.Status.Finished = true
-    action.Status.Stdout.WriteString("Finished deploying " + action.Repo + " at commit " + action.Hash + ". A new version change event was registered.")
-    // We could free the memory occupied by the buffers like below, but data may be used for further fetching.
-    // action.Status.Stdout, action.Status.Stderr = nil, nil
     return nil
 }
 

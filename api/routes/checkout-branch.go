@@ -22,6 +22,7 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
     }
 
     action := &builddeploy.Action{
+        ID: builddeploy.GenerateActionID(),
         Repo: r.URL.Query().Get("repo"),
         Hash: r.URL.Query().Get("commit"),
     }
