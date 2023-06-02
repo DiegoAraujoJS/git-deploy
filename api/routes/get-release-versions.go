@@ -2,34 +2,61 @@ package routes
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 )
 
-type FullResponse struct {
-	*navigation.BranchResponse
-}
-
-func GetAllCommits(w http.ResponseWriter, r *http.Request) {
-	_, ok := utils.Repositories[r.URL.Query().Get("repo")]
+func GetRepoTags(w http.ResponseWriter, r *http.Request) {
+    _, ok := utils.Repositories[r.URL.Query().Get("repo")]
 
     if !ok {
-        log.Println("Error while getting release versions -> Repository not found" + r.URL.Query().Get("repo"))
         WriteError(&w, "Repository not found", 403)
         return
     }
 
-	response, err := json.Marshal(&FullResponse{
-		BranchResponse: navigation.GetAllCommits(r.URL.Query().Get("repo")),
-	})
-	if err != nil {
-        log.Println("Error while getting release versions -> "+err.Error())
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(response)
+    response, err := json.Marshal(navigation.GetRepoTags(r.URL.Query().Get("repo")))
+    if err != nil {
+        WriteError(&w, "Error while getting release versions", 403)
+        return
+    }
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    w.Write(response)
+}
+
+func GetCommits(w http.ResponseWriter, r *http.Request) {
+	_, ok := utils.Repositories[r.URL.Query().Get("repo")]
+    i, err_i := strconv.Atoi(r.URL.Query().Get("i"))
+    j, err_j := strconv.Atoi(r.URL.Query().Get("j"))
+
+    if !ok {
+        WriteError(&w, "Repository not found", 403)
+        return
+    }
+
+    commits := navigation.GetAllCommits(r.URL.Query().Get("repo"))
+    if err_i != nil {
+        i = 0
+    }
+    if err_j != nil {
+        j = len(commits)
+    }
+    if i > len(commits) {
+        i = len(commits)
+    }
+    if j > len(commits) {
+        j = len(commits)
+    }
+
+    response, err := json.Marshal(commits[i:j])
+    if err != nil {
+        WriteError(&w, "Error while getting release versions", 403)
+        return
+    }
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    w.Write(response)
 }

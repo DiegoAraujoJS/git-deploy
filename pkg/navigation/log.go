@@ -2,44 +2,40 @@ package navigation
 
 import (
 	"log"
-	"strings"
-
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-var All_commits map[string]*BranchResponse = map[string]*BranchResponse{}
+var All_commits map[string][]*Commit = map[string][]*Commit{}
+var All_tags map[string]*RepoTags = map[string]*RepoTags{}
 
-type Branch struct {
-    Commit          *object.Commit  `json:"commit"`
+type Commit struct {
+    *object.Commit
     NewReference    string          `json:"new_reference"`
     Branch          []string        `json:"branches"`
 }
 
-type BranchResponse struct {
-    Commits         []*Branch       `json:"commits"`
+type RepoTags struct {
     CurrentVersion  string          `json:"current_version"`
     Head            *object.Commit  `json:"head"`
     Branches        []string        `json:"branches"`
 }
 
-func GetAllCommits(repository string) *BranchResponse {
+func GetAllCommits(repository string) []*Commit {
     repo := utils.Repositories[repository]
 
     if _, ok := All_commits[repository]; !ok {
         branches, err := repo.Branches()
         if err != nil {
-            log.Fatal(err.Error())
+            log.Println("Error while fetching branches", err.Error())
         }
 
-        var commits_map = map[string]*Branch{}
-        var branches_names = map[string]struct{}{}
+        var commits_map = map[string]*Commit{}
 
         for {
             branch, err := branches.Next()
             if branch == nil || err != nil { break }
-            branches_names[branch.Name().Short()] = struct{}{}
             log, _ := repo.Log(&git.LogOptions{
                 From: branch.Hash(),
             })
@@ -51,32 +47,59 @@ func GetAllCommits(repository string) *BranchResponse {
                     payload.Branch = append(payload.Branch, branch.Name().Short())
                     continue
                 }
-                commits_map[commit.Hash.String()] = &Branch{
+                commits_map[commit.Hash.String()] = &Commit{
                     Commit: commit,
                     Branch: []string{branch.Name().Short()},
                 }
             }
         }
 
-        All_commits[repository] = &BranchResponse{}
+        All_commits[repository] = []*Commit{}
         for _, v := range commits_map {
-            All_commits[repository].Commits = append(All_commits[repository].Commits, v)
-        }
-        for k := range branches_names {
-            All_commits[repository].Branches = append(All_commits[repository].Branches, k)
+            All_commits[repository] = append(All_commits[repository], v)
         }
         // Sort commits by date. The most recent is the first.
-        All_commits[repository].Commits = utils.MergeSort(All_commits[repository].Commits, func(n *Branch, m *Branch) bool {
-           return m.Commit.Committer.When.Before(n.Commit.Author.When)
+        All_commits[repository] = utils.MergeSort(All_commits[repository], func(n *Commit, m *Commit) bool {
+           return m.Committer.When.Before(n.Committer.When)
         })
         // Sort branches by name.
-        All_commits[repository].Branches = utils.MergeSort(All_commits[repository].Branches, func(n string, m string) bool {
-            return strings.ToLower(n) < strings.ToLower(m)
-        })
     }
 
-    head, _ := repo.Head()
-    head_commit, _ := repo.CommitObject(head.Hash())
-    All_commits[repository].Head = head_commit
     return All_commits[repository]
+}
+
+func GetRepoTags(repository string) *RepoTags {
+    repo := utils.Repositories[repository]
+    var branches_names = map[string]struct{}{}
+    branches, err := repo.Branches()
+    if err != nil {
+        log.Println(err.Error())
+    }
+    for {
+        branch, err := branches.Next()
+        if branch == nil || err != nil { break }
+        branches_names[branch.Name().Short()] = struct{}{}
+    }
+
+    All_tags[repository] = &RepoTags{}
+
+    for k := range branches_names {
+        All_tags[repository].Branches = append(All_tags[repository].Branches, k)
+    }
+
+    All_tags[repository].Branches = utils.MergeSort(All_tags[repository].Branches, func(n string, m string) bool {
+        return n < m
+    })
+
+    head, err := repo.Head()
+    if err != nil {
+        log.Println(err.Error())
+    }
+    head_commit, err := repo.CommitObject(head.Hash())
+    if err != nil {
+        log.Println(err.Error())
+    }
+    All_tags[repository].Head = head_commit
+
+    return All_tags[repository]
 }

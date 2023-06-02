@@ -94,7 +94,7 @@ func fetchAndSendAction(config *AutobuildConfig) error {
         return err
     }
     // We reset the map below to re-populate the commits.
-    navigation.All_commits = map[string]*navigation.BranchResponse{}
+    navigation.All_commits = map[string][]*navigation.Commit{}
 
     branch, _ = utils.GetBranch(repo, config.Branch)
     new_commit := branch.Hash().String()

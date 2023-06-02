@@ -31,7 +31,7 @@ func UpdateRepos(w http.ResponseWriter, r *http.Request) {
         WriteError(&w, string(json), http.StatusInternalServerError)
         return
     }
-    navigation.All_commits = map[string]*navigation.BranchResponse{}
+    navigation.All_commits = map[string][]*navigation.Commit{}
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
     w.Write([]byte("Repositories updated successfully 👌"))

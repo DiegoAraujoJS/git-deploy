@@ -15,7 +15,8 @@ func ListenAndServe() {
     router := http.NewServeMux()
 
     router.HandleFunc("/getRepos", routes.GetRepos)
-	router.HandleFunc("/getTags", routes.GetAllCommits)
+	router.HandleFunc("/getTags", routes.GetRepoTags)
+    router.HandleFunc("/getCommits", routes.GetCommits)
 	router.HandleFunc("/checkout", routes.CheckoutBranch)
     router.HandleFunc("/repoHistory", routes.GetRepoHistory)
     router.HandleFunc("/updateRepos", routes.UpdateRepos)
