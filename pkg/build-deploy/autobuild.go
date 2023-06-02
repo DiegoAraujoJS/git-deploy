@@ -20,10 +20,12 @@ type AutobuildConfig struct {
     LastFetch time.Time
 }
 
-var ActiveTimers = map[string]*struct{
+type AutobuildTimers struct{
     Timer   *time.Ticker
     Config  *AutobuildConfig
-}{}
+}
+
+var ActiveTimers = map[string]*AutobuildTimers{}
 
 var timers = map[string]*time.Timer{}
 
@@ -39,7 +41,7 @@ func AddTimer(config *AutobuildConfig) *time.Ticker{
 
     if config.Stdout == nil { config.Stdout = &bytes.Buffer{} }
     if config.Stderr == nil { config.Stderr = &bytes.Buffer{} }
-    ActiveTimers[config.Repo] = &struct{Timer *time.Ticker; Config *AutobuildConfig}{
+    ActiveTimers[config.Repo] = &AutobuildTimers{
         Timer: new_chan,
         Config: config,
     }
@@ -98,7 +100,7 @@ func fetchAndSendAction(config *AutobuildConfig) error {
     new_commit := branch.Hash().String()
 
     if last_commit != new_commit {
-        register := time.Now().Format("2006-01-02 15:04:05") + last_commit + " --> " + new_commit + "\n"
+        register := time.Now().Format("2006-01-02 15:04:05 ") + last_commit + " --> " + new_commit + "\n"
         config.LastFetch = time.Now()
         fmt.Println(register)
         config.Stdout.WriteString(register)

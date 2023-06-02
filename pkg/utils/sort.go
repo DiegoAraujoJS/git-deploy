@@ -1,5 +1,6 @@
 package utils
 
+// comparatorFunc is a comparator function that has to be understood in analogy to <(a, b), where a and b are numbers and "<" is a comparator function that returns true if a < b and false otherwise.
 func MergeSort [K any] (value []K, comparatorFunc func(a K, b K) bool) []K {
     if len(value) < 2 {
         return value
@@ -11,22 +12,14 @@ func MergeSort [K any] (value []K, comparatorFunc func(a K, b K) bool) []K {
     var merged = make([]K, 0, len(value))
     i, j := 0, 0
     for i != len(left_split) && j != len(right_split) {
-        if comparatorFunc(right_split[j], left_split[i]) {
-            merged = append(merged, right_split[j])
+        if comparatorFunc(left_split[i], right_split[j]) {
+            merged = append(merged, left_split[i])
             j++
             continue
         }
-        merged = append(merged, left_split[i])
+        merged = append(merged, right_split[j])
         i++
     }
 
-    for ; i < len(left_split) ; i++ {
-        merged = append(merged, left_split[i])
-    }
-
-    for ; j < len(right_split) ; j++ {
-        merged = append(merged, right_split[j])
-    }
-
-    return merged
+    return append(merged, append(left_split[i:], right_split[j:]...)...)
 }

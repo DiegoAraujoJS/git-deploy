@@ -11,28 +11,30 @@ import (
 // Config is the struct that holds the configuration for the git repositories. 
 //
 // The configuration is read from a json file that is located in the root of the project. For deployment, the config.json is located on the same folder as the binary.
-type Config struct {
-    Port string
-	Directories []struct {
-		Name      string
-		Directory string
-	}
-    Database struct {
-        Server      string
-        Port        string
-        User        string
-        Password    string
-        Name        string
-    }
-    Env string
-    Credentials struct {
-        Password    string
-        Ssh         string
-    }
-}
 
-var Repositories = map[string]*git.Repository{}
-var ConfigValue Config
+var (
+    Repositories = map[string]*git.Repository{}
+    ConfigValue struct {
+        Port string
+        Directories []struct {
+            Name      string
+            Directory string
+        }
+        Database struct {
+            Server      string
+            Port        string
+            User        string
+            Password    string
+            Name        string
+        }
+        Env string
+        Credentials struct {
+            Password    string
+            Ssh         string
+        }
+    }
+
+)
 
 func Connect() {
 	content, err := ioutil.ReadFile("./config.json")

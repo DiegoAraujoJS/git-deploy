@@ -22,12 +22,12 @@ func Build(action *Action) error {
     cmd.Stderr = action.Status.Stderr
     action.Status.Stdout.WriteString("Executing build script " + script + " for repo " + action.Repo + "\n")
     err := cmd.Run()
-    action.Status.Stdout.WriteString("Finished executing build script " + script + " for repo " + action.Repo + "\n")
     if err != nil {
         error := "Error while executing build script " + script + " for repo " + action.Repo + "\n" + err.Error()
         log.Println(error)
         action.Status.Stderr.WriteString(error)
         return err
     }
+    action.Status.Stdout.WriteString("Finished executing build script " + script + " for repo " + action.Repo + "\n")
 	return nil
 }
