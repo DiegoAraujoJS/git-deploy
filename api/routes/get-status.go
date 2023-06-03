@@ -57,3 +57,23 @@ func GetStatus(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
 }
+
+func ClearStatus(w http.ResponseWriter, r *http.Request) {
+    ID := r.URL.Query().Get("ID")
+    _, err := strconv.Atoi(ID)
+
+    if err != nil {
+        if config, ok := builddeploy.ActiveTimers[ID]; ok {
+            config.Config.Stdout.Reset()
+            config.Config.Stderr.Reset()
+
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusOK)
+            w.Write([]byte("ok"))
+            return
+        }
+        WriteError(&w, "No timer active for " + ID, http.StatusNotAcceptable)
+        return
+    }
+    WriteError(&w, "Not implemented", http.StatusNotImplemented)
+}

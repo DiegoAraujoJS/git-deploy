@@ -21,6 +21,7 @@ func ListenAndServe() {
     router.HandleFunc("/repoHistory", routes.GetRepoHistory)
     router.HandleFunc("/updateRepos", routes.UpdateRepos)
     router.HandleFunc("/getStatus", routes.GetStatus)
+    router.HandleFunc("/clearStatus", routes.ClearStatus)
     router.HandleFunc("/addTimer", routes.AddTimer)
     router.HandleFunc("/deleteTimer", routes.DeleteTimer)
     router.HandleFunc("/getTimers", routes.GetTimers)
