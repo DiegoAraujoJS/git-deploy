@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -198,7 +197,8 @@ func TestGetCommits(t *testing.T) {
     if len(body) == 3 {
         t.Error("Response body length not ok. Should be 3", len(body))
     }
-    for _, item := range response_list {
+    messsage := response_list[0].(map[string]interface{})["Message"].(string)
+    for i, item := range response_list {
         commit := item.(map[string]interface{})
         if _, ok := commit["Hash"]; !ok {
             t.Error("Hash not found in response list item.")
@@ -213,9 +213,12 @@ func TestGetCommits(t *testing.T) {
             t.Error("Message not found in response list item.")
         }
         branches, ok := commit["branches"].([]interface{})
-        fmt.Println(branches)
         if !ok || len(branches) < 1 {
             t.Error("branches not found in response list item. or length not ok.")
         }
+        if i != 0 && messsage == commit["Message"].(string) {
+            t.Error("Commits should be different.")
+        }
+
     }
 }

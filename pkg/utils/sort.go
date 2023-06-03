@@ -14,12 +14,19 @@ func MergeSort [K any] (value []K, comparatorFunc func(a K, b K) bool) []K {
     for i != len(left_split) && j != len(right_split) {
         if comparatorFunc(left_split[i], right_split[j]) {
             merged = append(merged, left_split[i])
-            j++
+            i++
             continue
         }
         merged = append(merged, right_split[j])
+        j++
+    }
+    for i != len(left_split) {
+        merged = append(merged, left_split[i])
         i++
     }
-
-    return append(merged, append(left_split[i:], right_split[j:]...)...)
+    for j != len(right_split) {
+        merged = append(merged, right_split[j])
+        j++
+    }
+    return merged
 }

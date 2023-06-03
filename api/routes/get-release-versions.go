@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -52,6 +53,7 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
     }
 
     response, err := json.Marshal(commits[i:j])
+    fmt.Println(commits[i:j])
     if err != nil {
         WriteError(&w, "Error while getting release versions", 403)
         return

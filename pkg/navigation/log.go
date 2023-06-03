@@ -1,7 +1,9 @@
 package navigation
 
 import (
+	"fmt"
 	"log"
+
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -58,10 +60,16 @@ func GetAllCommits(repository string) []*Commit {
         for _, v := range commits_map {
             All_commits[repository] = append(All_commits[repository], v)
         }
+        for _, v := range All_commits[repository] {
+            fmt.Println(v.Hash)
+        }
         // Sort commits by date. The most recent is the first.
         All_commits[repository] = utils.MergeSort(All_commits[repository], func(n *Commit, m *Commit) bool {
            return m.Committer.When.Before(n.Committer.When)
         })
+        for _, v := range All_commits[repository] {
+            fmt.Println(v.Hash)
+        }
         // Sort branches by name.
     }
 
