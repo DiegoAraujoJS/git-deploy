@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -220,5 +221,160 @@ func TestGetCommits(t *testing.T) {
             t.Error("Commits should be different.")
         }
 
+    }
+}
+// func AddTimer(w http.ResponseWriter, r *http.Request) {
+//     repo, ok := utils.Repositories[r.URL.Query().Get("repo")]
+//     if !ok {
+//         WriteError(&w, "Repository " + r.URL.Query().Get("repo") + " not found", http.StatusNotAcceptable)
+//         return
+//     }
+// 
+//     if _, err := utils.GetBranch(repo, r.URL.Query().Get("branch")); err != nil {
+//         WriteError(&w, "Branch " + r.URL.Query().Get("branch") + " not found", http.StatusNotAcceptable)
+//         return
+//     }
+// 
+//     if secs, err := strconv.Atoi(r.URL.Query().Get("seconds")); err == nil && secs >= 60 {
+//         w.Header().Set("Content-Type", "text")
+//         w.WriteHeader(http.StatusOK)
+//         w.Write([]byte("ok"))
+// 
+//         builddeploy.AddTimer(&builddeploy.AutobuildConfig{
+//             Repo: r.URL.Query().Get("repo"),
+//             Seconds: secs,
+//             Branch: r.URL.Query().Get("branch"),
+//         })
+//         return
+//     }
+// 
+//     WriteError(&w, "Format of \"seconds\" not correct or either has to be >= 60", http.StatusNotAcceptable)
+// }
+func TestAddTimer(t *testing.T) {
+    req, _ := http.NewRequest("GET", "http://localhost:3001" +"/addTimer?repo=PWA-VUEJS&branch=master&seconds=60", nil)
+    req.Header.Add("Authorization", password)
+    response, err := http.DefaultClient.Do(req)
+    if err != nil {
+        t.Error(err)
+    }
+    if response.StatusCode != http.StatusOK {
+        t.Error("Status code not ok")
+    }
+    if response.Header.Get("Content-Type") != "text" {
+        t.Error("Response type not ok")
+    }
+    body, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+        t.Error(err)
+    }
+    if string(body) != "ok" {
+        t.Error("Response body not ok. Should be \"ok\"")
+    }
+}
+
+// func GetTimers(w http.ResponseWriter, r *http.Request) {
+// 
+//     var configs = []*builddeploy.AutobuildConfig{}
+//     for _, timer := range builddeploy.ActiveTimers {
+//         configs = append(configs, timer.Config)
+//     }
+//     response, _ := json.Marshal(configs)
+// 
+//     w.Header().Set("Content-Type", "application/json")
+//     w.WriteHeader(http.StatusOK)
+//     w.Write(response)
+// }
+func TestGetTimers(t *testing.T) {
+    req, _ := http.NewRequest("GET", "http://localhost:3001" +"/getTimers", nil)
+    req.Header.Add("Authorization", password)
+    response, err := http.DefaultClient.Do(req)
+    if err != nil {
+        t.Error(err)
+    }
+    if response.StatusCode != http.StatusOK {
+        t.Error("Status code not ok")
+    }
+    if response.Header.Get("Content-Type") != "application/json" {
+        t.Error("Response type not ok")
+    }
+    body, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+        t.Error(err)
+    }
+    response_list := []interface{}{}
+    err = json.Unmarshal(body, &response_list)
+    if err != nil {
+        t.Error(err)
+    }
+    if len(response_list) != 1 {
+        t.Error("Response body length not ok. Should be 1", len(body))
+    }
+    for _, item := range response_list {
+        config := item.(map[string]interface{})
+        if _, ok := config["Repo"]; !ok {
+            t.Error("Repo not found in response list item.")
+        }
+        if _, ok := config["Branch"]; !ok {
+            t.Error("Branch not found in response list item.")
+        }
+        if _, ok := config["Seconds"]; !ok {
+            t.Error("Seconds not found in response list item.")
+        }
+    }
+}
+// func DeleteTimer(w http.ResponseWriter, r *http.Request) {
+//     repo := r.URL.Query().Get("repo")
+// 
+//     if _, ok := builddeploy.ActiveTimers[repo]; ok {
+//         builddeploy.DeleteTimer(repo)
+//         w.Header().Set("Content-Type", "application/json")
+//         w.WriteHeader(http.StatusOK)
+//         w.Write([]byte("ok"))
+//         return
+//     }
+// 
+//     WriteError(&w, "Timer not found", http.StatusNotAcceptable)
+// }
+func TestDeleteTimer(t *testing.T) {
+    req, _ := http.NewRequest("GET", "http://localhost:3001" +"/deleteTimer?repo=PWA-VUEJS", nil)
+    req.Header.Add("Authorization", password)
+    response, err := http.DefaultClient.Do(req)
+    if err != nil {
+        t.Error(err)
+    }
+    if response.StatusCode != http.StatusOK {
+        t.Error("deleteTimer Status code not ok")
+    }
+    if response.Header.Get("Content-Type") != "application/json" {
+        t.Error("Response type not ok")
+    }
+    body, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+        t.Error(err)
+    }
+    if string(body) != "ok" {
+        t.Error("Response body not ok. Should be \"ok\"")
+    }
+    req_get, _ := http.NewRequest("GET", "http://localhost:3001" +"/getTimers", nil)
+    req_get.Header.Add("Authorization", password)
+    response_get, err := http.DefaultClient.Do(req_get)
+    if err != nil {
+        t.Error(err)
+    }
+    if response_get.StatusCode != http.StatusOK {
+        t.Error("getTimers Status code not ok")
+        fmt.Println(response_get)
+    }
+    body_get, err := ioutil.ReadAll(response_get.Body)
+    if err != nil {
+        t.Error(err)
+    }
+    response_list := []interface{}{}
+    err = json.Unmarshal(body_get, &response_list)
+    if err != nil {
+        t.Error(err)
+    }
+    if len(response_list) != 0 {
+        t.Error("Response body length not ok. Should be 0", len(body))
     }
 }

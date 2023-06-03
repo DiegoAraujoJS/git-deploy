@@ -41,6 +41,7 @@ func AddTimer(config *AutobuildConfig) *time.Ticker{
 
     if config.Stdout == nil { config.Stdout = &bytes.Buffer{} }
     if config.Stderr == nil { config.Stderr = &bytes.Buffer{} }
+    if config.LastFetch.IsZero() { config.LastFetch = time.Now() }
     ActiveTimers[config.Repo] = &AutobuildTimers{
         Timer: new_chan,
         Config: config,
