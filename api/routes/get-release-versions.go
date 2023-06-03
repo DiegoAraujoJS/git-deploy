@@ -7,6 +7,7 @@ import (
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
+	"github.com/thoas/go-funk"
 )
 
 func GetRepoTags(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +50,24 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
     }
     if j > len(commits) {
         j = len(commits)
+    }
+    if i < 0 {
+        i = 0
+    }
+    if j < 0 {
+        j = 0
+    }
+
+    // Filter by branch if branch is not empty
+    branch := r.URL.Query().Get("branch")
+    if branch != "" {
+        filtered_commits := make([]*navigation.Commit, 0, len(commits))
+        for _, commit := range commits {
+            if funk.Contains(commit.Branch, branch) {
+                filtered_commits = append(filtered_commits, commit)
+            }
+        }
+        commits = filtered_commits
     }
 
     response, err := json.Marshal(commits[i:j])
