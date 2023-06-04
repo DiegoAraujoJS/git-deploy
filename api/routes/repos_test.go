@@ -137,7 +137,6 @@ func TestGetTags(t *testing.T) {
     if response_struct["branches"] == nil {
         t.Error("Head not found in response struct.")
     }
-    // Test that the commits have the correct format
 }
 // func GetCommits(w http.ResponseWriter, r *http.Request) {
 // 	_, ok := utils.Repositories[r.URL.Query().Get("repo")]
@@ -195,8 +194,8 @@ func TestGetCommits(t *testing.T) {
     if err != nil {
         t.Error(err)
     }
-    if len(body) == 3 {
-        t.Error("Response body length not ok. Should be 3", len(body))
+    if len(response_list) != 3 {
+        t.Error("Response body length not ok. Should be 3", len(response_list))
     }
     messsage := response_list[0].(map[string]interface{})["Message"].(string)
     for i, item := range response_list {

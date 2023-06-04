@@ -30,9 +30,7 @@ func getCommit(repo, hash string) (*object.Commit, error) {
 func GetRepoHistory(w http.ResponseWriter, r *http.Request) {
     _, ok := utils.Repositories[r.URL.Query().Get("repo")]
     if !ok {
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusNotAcceptable)
-        w.Write([]byte(`{"error": "Repository not found"}`))
+        WriteError(&w, "Repository not found", http.StatusNotFound)
         return
     }
     versionChangeEvents, err := database.SelectVersionChangeEvents(r.URL.Query().Get("repo"))
@@ -40,22 +38,24 @@ func GetRepoHistory(w http.ResponseWriter, r *http.Request) {
         log.Println(err.Error())
         return
     }
-    var versionChangeEventsWithCommit []*VersionChangeEventWithCommit
-    for _, versionChangeEvent := range versionChangeEvents {
+    i, j := NormalizeSliceIndexes(len(versionChangeEvents), r)
+    var response []*VersionChangeEventWithCommit
+    for k := i; k < j; k++ {
+        versionChangeEvent := versionChangeEvents[k]
         commit, err := getCommit(r.URL.Query().Get("repo"), versionChangeEvent.Hash)
         if err != nil {
             log.Println(err.Error())
             // We continue instead of returning mainly because we don't want to stop the loop if there is an error getting a commit. We just want to ignore that commit.
             continue
         }
-        versionChangeEventsWithCommit = append(versionChangeEventsWithCommit, &VersionChangeEventWithCommit{
+        response = append(response, &VersionChangeEventWithCommit{
             Hash: versionChangeEvent.Hash,
             CreatedAt: versionChangeEvent.CreatedAt,
             Commit: commit,
         })
     }
     var versionChangeEventsJSON []byte
-    versionChangeEventsJSON, err = json.Marshal(versionChangeEventsWithCommit)
+    versionChangeEventsJSON, err = json.Marshal(response)
     if err != nil {
         log.Println(err.Error())
         return

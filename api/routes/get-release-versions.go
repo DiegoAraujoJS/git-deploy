@@ -3,7 +3,6 @@ package routes
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
@@ -14,7 +13,7 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
 	_, ok := utils.Repositories[r.URL.Query().Get("repo")]
 
 	if !ok {
-		WriteError(&w, "Repository not found", 403)
+		WriteError(&w, "Repository not found", http.StatusNotFound)
 		return
 	}
 
@@ -30,11 +29,9 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
 
 func GetCommits(w http.ResponseWriter, r *http.Request) {
 	_, ok := utils.Repositories[r.URL.Query().Get("repo")]
-	i, err_i := strconv.Atoi(r.URL.Query().Get("i"))
-	j, err_j := strconv.Atoi(r.URL.Query().Get("j"))
 
 	if !ok {
-		WriteError(&w, "Repository not found", 403)
+		WriteError(&w, "Repository not found", http.StatusNotFound)
 		return
 	}
 
@@ -50,25 +47,7 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
 		}
 		commits = filtered_commits
 	}
-
-	if err_i != nil {
-		i = 0
-	}
-	if err_j != nil {
-		j = len(commits)
-	}
-	if i > len(commits) {
-		i = len(commits)
-	}
-	if j > len(commits) {
-		j = len(commits)
-	}
-	if i < 0 {
-		i = 0
-	}
-	if j < 0 {
-		j = 0
-	}
+    i, j := NormalizeSliceIndexes(len(commits), r)
 
 	response, err := json.Marshal(commits[i:j])
 	if err != nil {
