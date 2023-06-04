@@ -30,12 +30,12 @@ func Checkout(action *Action) (*plumbing.Reference, error) {
 	}
 
 	ref, err := repo.Head()
-    action.Status.Stdout.WriteString("Successfully changed repository head to " + ref.Hash().String() + "\n")
 	if err != nil {
         log.Println("Error while getting repository head -> "+err.Error())
         action.Status.Stderr.WriteString(err.Error())
 		return nil, err
 	}
+    action.Status.Stdout.WriteString("Successfully changed repository head to " + ref.Hash().String() + "\n")
 
 	return ref, nil
 }

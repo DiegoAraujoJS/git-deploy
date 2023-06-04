@@ -13,11 +13,7 @@ func GetRepos(w http.ResponseWriter, r *http.Request) {
 	for _, v := range utils.ConfigValue.Directories {
 		repos = append(repos, v.Name)
 	}
-	response, err := json.Marshal(&struct{
-        Repos []string
-    } {
-		Repos: repos,
-	})
+	response, err := json.Marshal(repos)
 	if err != nil {
 		log.Println(err.Error())
 		return

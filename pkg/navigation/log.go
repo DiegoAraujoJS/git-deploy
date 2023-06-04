@@ -10,7 +10,6 @@ import (
 )
 
 var All_commits map[string][]*Commit = map[string][]*Commit{}
-var All_tags map[string]*RepoTags = map[string]*RepoTags{}
 
 type Commit struct {
     *object.Commit
@@ -72,27 +71,21 @@ func GetAllCommits(repository string) []*Commit {
 
 func GetRepoTags(repository string) *RepoTags {
     repo := utils.Repositories[repository]
-    var branches_names = map[string]struct{}{}
     branches, err := repo.Storer.IterReferences()
     if err != nil {
         log.Println(err.Error())
     }
+
+    repo_tags := &RepoTags{}
     for {
         branch, err := branches.Next()
         if branch == nil || err != nil { break }
         if !strings.HasPrefix(branch.Name().String(), "refs/remotes/") {continue}
         relative_name := strings.Replace(branch.Name().String(), "refs/remotes/origin/", "", 1)
-        branches_names[relative_name] = struct{}{}
-    }
-    delete(branches_names, "HEAD")
-
-    All_tags[repository] = &RepoTags{}
-
-    for k := range branches_names {
-        All_tags[repository].Branches = append(All_tags[repository].Branches, k)
+        if relative_name != "HEAD" {repo_tags.Branches = append(repo_tags.Branches, relative_name)}
     }
 
-    All_tags[repository].Branches = utils.MergeSort(All_tags[repository].Branches, func(n string, m string) bool {
+    repo_tags.Branches = utils.MergeSort(repo_tags.Branches, func(n string, m string) bool {
         return n < m
     })
 
@@ -104,7 +97,7 @@ func GetRepoTags(repository string) *RepoTags {
     if err != nil {
         log.Println(err.Error())
     }
-    All_tags[repository].Head = head_commit
+    repo_tags.Head = head_commit
 
-    return All_tags[repository]
+    return repo_tags
 }
