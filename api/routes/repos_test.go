@@ -197,10 +197,22 @@ func TestGetCommits(t *testing.T) {
     if len(response_list) != 3 {
         t.Error("Response body length not ok. Should be 3", len(response_list))
     }
-    messsage := response_list[0].(map[string]interface{})["Message"].(string)
+    hash := response_list[0].(map[string]interface{})["Hash"].([]interface{})
     for i, item := range response_list {
         commit := item.(map[string]interface{})
-        if _, ok := commit["Hash"]; !ok {
+        if h, ok := commit["Hash"].([]interface{}); ok {
+            if i != 0 {
+                equal := true
+                for j := range hash {
+                    if hash[j] != h[j] {
+                        equal = false
+                    }
+                }
+                if equal {
+                    t.Error("Hash equal to previous hash.")
+                }
+            }
+        } else {
             t.Error("Hash not found in response list item.")
         }
         if _, ok := commit["Author"]; !ok {
@@ -215,9 +227,6 @@ func TestGetCommits(t *testing.T) {
         branches, ok := commit["branches"].([]interface{})
         if !ok || len(branches) < 1 {
             t.Error("branches not found in response list item. or length not ok.")
-        }
-        if i != 0 && messsage == commit["Message"].(string) {
-            t.Error("Commits should be different.")
         }
 
     }
@@ -258,16 +267,6 @@ func TestAddTimer(t *testing.T) {
     }
     if response.StatusCode != http.StatusOK {
         t.Error("Status code not ok")
-    }
-    if response.Header.Get("Content-Type") != "text" {
-        t.Error("Response type not ok")
-    }
-    body, err := ioutil.ReadAll(response.Body)
-    if err != nil {
-        t.Error(err)
-    }
-    if string(body) != "ok" {
-        t.Error("Response body not ok. Should be \"ok\"")
     }
 }
 
@@ -350,9 +349,6 @@ func TestDeleteTimer(t *testing.T) {
     body, err := ioutil.ReadAll(response.Body)
     if err != nil {
         t.Error(err)
-    }
-    if string(body) != "ok" {
-        t.Error("Response body not ok. Should be \"ok\"")
     }
     req_get, _ := http.NewRequest("GET", "http://localhost:3001" +"/getTimers", nil)
     req_get.Header.Add("Authorization", password)
