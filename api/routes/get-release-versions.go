@@ -32,10 +32,12 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
 	// Filter by branch if branch is not empty
 	branch := r.URL.Query().Get("branch")
     filtered_commits := make([]*navigation.Commit, 0, j - i)
-    for ; i < j; i++ {
-        commit := commits[i]
+    count := 0
+    for _, commit := range commits {
+        if count == j - i { break }
         if branch == "" || funk.Contains(commit.Branch, branch) {
-            filtered_commits = append(filtered_commits, commit)
+            if count >= i && count < j {filtered_commits = append(filtered_commits, commit)}
+            count++
         }
     }
 
