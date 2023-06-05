@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -22,14 +21,10 @@ func GetStatus(w http.ResponseWriter, r *http.Request) {
 
     if err != nil {
         if config, ok := builddeploy.ActiveTimers[ID]; ok {
-            response, _ := json.Marshal(StatusResponse {
+            WriteResponseOk(&w, StatusResponse {
                 Stdout: config.Config.Stdout.String(),
                 Stderr: config.Config.Stderr.String(),
             })
-
-            w.Header().Set("Content-Type", "application/json")
-            w.WriteHeader(http.StatusOK)
-            w.Write(response)
             return
         }
         WriteError(&w, "No timer active for " + ID, http.StatusNotAcceptable)
@@ -42,20 +37,12 @@ func GetStatus(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    response, err := json.Marshal(StatusResponse{
+    WriteResponseOk(&w, StatusResponse{
         Finished: action.Status.Finished,
         Moment: builddeploy.StatusDict[action.Status.Moment],
         Stdout: action.Status.Stdout.String(),
         Stderr: action.Status.Stderr.String(),
     })
-    if err != nil {
-        WriteError(&w, "Error parsing response", http.StatusOK)
-        return
-    }
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(response)
 }
 
 func ClearStatus(w http.ResponseWriter, r *http.Request) {
@@ -67,9 +54,7 @@ func ClearStatus(w http.ResponseWriter, r *http.Request) {
             config.Config.Stdout.Reset()
             config.Config.Stderr.Reset()
 
-            w.Header().Set("Content-Type", "application/json")
-            w.WriteHeader(http.StatusOK)
-            w.Write([]byte("ok"))
+            WriteResponseOk(&w, "Status cleared")
             return
         }
         WriteError(&w, "No timer active for " + ID, http.StatusNotAcceptable)

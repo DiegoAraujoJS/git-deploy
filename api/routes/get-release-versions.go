@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
@@ -17,14 +16,7 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := json.Marshal(navigation.GetRepoTags(r.URL.Query().Get("repo")))
-	if err != nil {
-		WriteError(&w, "Error while getting release versions", 403)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(response)
+    WriteResponseOk(&w, navigation.GetRepoTags(r.URL.Query().Get("repo")))
 }
 
 func GetCommits(w http.ResponseWriter, r *http.Request) {
@@ -36,25 +28,16 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
 	}
 
 	commits := navigation.GetAllCommits(r.URL.Query().Get("repo"))
+    i, j := NormalizeSliceIndexes(len(commits), r)
 	// Filter by branch if branch is not empty
 	branch := r.URL.Query().Get("branch")
-	if branch != "" {
-		filtered_commits := make([]*navigation.Commit, 0, len(commits))
-		for _, commit := range commits {
-			if funk.Contains(commit.Branch, branch) {
-				filtered_commits = append(filtered_commits, commit)
-			}
-		}
-		commits = filtered_commits
-	}
-    i, j := NormalizeSliceIndexes(len(commits), r)
+    filtered_commits := make([]*navigation.Commit, 0, j - i)
+    for ; i < j; i++ {
+        commit := commits[i]
+        if branch == "" || funk.Contains(commit.Branch, branch) {
+            filtered_commits = append(filtered_commits, commit)
+        }
+    }
 
-	response, err := json.Marshal(commits[i:j])
-	if err != nil {
-		WriteError(&w, "Error while getting release versions", 403)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(response)
+    WriteResponseOk(&w, filtered_commits)
 }

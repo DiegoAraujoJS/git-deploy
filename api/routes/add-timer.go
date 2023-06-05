@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -22,15 +21,13 @@ func AddTimer(w http.ResponseWriter, r *http.Request) {
     }
 
     if secs, err := strconv.Atoi(r.URL.Query().Get("seconds")); err == nil && secs >= 60 {
-        w.Header().Set("Content-Type", "text")
-        w.WriteHeader(http.StatusOK)
-        w.Write([]byte("ok"))
 
         builddeploy.AddTimer(&builddeploy.AutobuildConfig{
             Repo: r.URL.Query().Get("repo"),
             Seconds: secs,
             Branch: r.URL.Query().Get("branch"),
         })
+        WriteResponseOk(&w, "Timer added")
         return
     }
 
@@ -42,9 +39,7 @@ func DeleteTimer(w http.ResponseWriter, r *http.Request) {
 
     if _, ok := builddeploy.ActiveTimers[repo]; ok {
         builddeploy.DeleteTimer(repo)
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusOK)
-        w.Write([]byte("ok"))
+        WriteResponseOk(&w, "Timer deleted")
         return
     }
 
@@ -57,9 +52,5 @@ func GetTimers(w http.ResponseWriter, r *http.Request) {
     for _, timer := range builddeploy.ActiveTimers {
         configs = append(configs, timer.Config)
     }
-    response, _ := json.Marshal(configs)
-
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusOK)
-    w.Write(response)
+    WriteResponseOk(&w, configs)
 }

@@ -29,7 +29,5 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 
     builddeploy.CheckoutBuildInsertChan <- action
 
-    w.Header().Set("Content-Type", "text")
-    w.WriteHeader(http.StatusOK)
-    w.Write([]byte(strconv.Itoa(action.ID)))
+    WriteResponseOk(&w, strconv.Itoa(action.ID))
 }

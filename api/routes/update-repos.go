@@ -32,7 +32,5 @@ func UpdateRepos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	navigation.All_commits = map[string][]*navigation.Commit{}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Repositories updated successfully 👌"))
+    WriteResponseOk(&w, "Repositories updated successfully 👌")
 }

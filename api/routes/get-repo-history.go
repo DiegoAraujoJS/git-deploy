@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -54,12 +53,5 @@ func GetRepoHistory(w http.ResponseWriter, r *http.Request) {
             Commit: commit,
         })
     }
-    versionChangeEventsJSON, err := json.Marshal(response)
-    if err != nil {
-        log.Println(err.Error())
-        return
-    }
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusOK)
-    w.Write(versionChangeEventsJSON)
+    WriteResponseOk(&w, response)
 }

@@ -20,6 +20,18 @@ func WriteError(w *http.ResponseWriter, err string, status int) {
     w_ref.Write(json_error)
 }
 
+func WriteResponseOk(w *http.ResponseWriter, body interface{}) {
+    w_ref := *w
+    w_ref.Header().Set("Content-Type", "application/json")
+    w_ref.WriteHeader(http.StatusOK)
+    json_body, parse_error := json.Marshal(body)
+    if parse_error != nil {
+        WriteError(w, "Error parsing response", http.StatusInternalServerError)
+        return
+    }
+    w_ref.Write(json_body)
+}
+
 func NormalizeSliceIndexes (response_length int, r *http.Request) (int, int) {
 	i, err_i := strconv.Atoi(r.URL.Query().Get("i"))
 	j, err_j := strconv.Atoi(r.URL.Query().Get("j"))
