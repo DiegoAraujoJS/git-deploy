@@ -73,6 +73,7 @@ func GetRepoTags(repository string) *RepoTags {
     branches, err := repo.Branches()
     if err != nil {
         log.Println(err.Error())
+        return nil
     }
 
     repo_tags := &RepoTags{}
@@ -91,10 +92,12 @@ func GetRepoTags(repository string) *RepoTags {
     head, err := repo.Head()
     if err != nil {
         log.Println(err.Error())
+        return nil
     }
     head_commit, err := repo.CommitObject(head.Hash())
     if err != nil {
         log.Println(err.Error())
+        return nil
     }
     repo_tags.Head = head_commit
 
