@@ -77,13 +77,15 @@ func GetRepoTags(repository string) *RepoTags {
     }
 
     repo_tags := &RepoTags{}
+    repo_branches := []string{}
     for {
         branch, err := branches.Next()
         if branch == nil || err != nil { break }
         if !strings.HasPrefix(branch.Name().String(), "refs/remotes/") {continue}
-        relative_name := strings.Replace(branch.Name().String(), "refs/remotes/origin/", "", 1)
-        if relative_name != "HEAD" {repo_tags.Branches = append(repo_tags.Branches, relative_name)}
+        short_name := strings.Replace(branch.Name().String(), "refs/remotes/origin/", "", 1)
+        if short_name != "HEAD" {repo_branches = append(repo_branches, short_name)}
     }
+    repo_tags.Branches = repo_branches
 
     repo_tags.Branches = utils.MergeSort(repo_tags.Branches, func(n string, m string) bool {
         return n < m

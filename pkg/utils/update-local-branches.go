@@ -36,7 +36,7 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
     }
 
 	err = remote.Fetch(&git.FetchOptions{
-		RefSpecs:   []config.RefSpec{"refs/heads/*:refs/heads/*"},
+		RefSpecs:   []config.RefSpec{"refs/heads/*:refs/remotes/origin/*"},
 		Force:      true,
         Auth:       public_key,
 	})
@@ -46,26 +46,6 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
 		return err
 	}
 
-	// Get the remote branches
-	remoteBranches, err := repo.Branches()
-	if err != nil {
-		return err
-	}
-
-	// Iterate over the remote branches
-	err = remoteBranches.ForEach(func(ref *plumbing.Reference) error {
-		// Resolve the commit for the remote branch
-		commit, err := repo.CommitObject(ref.Hash())
-		if err != nil {
-            fmt.Println("Error getting commit object", err)
-			return err
-		}
-
-		// Force update the local branch to match the remote branch
-		err = repo.Storer.SetReference(plumbing.NewHashReference(ref.Name(), commit.Hash))
-
-        return err
-	})
 	return err
 }
 

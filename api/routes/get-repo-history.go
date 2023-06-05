@@ -39,7 +39,7 @@ func GetRepoHistory(w http.ResponseWriter, r *http.Request) {
         return
     }
     i, j := NormalizeSliceIndexes(len(versionChangeEvents), r)
-    var response []*VersionChangeEventWithCommit
+    var response = []*VersionChangeEventWithCommit{}
     for k := i; k < j; k++ {
         versionChangeEvent := versionChangeEvents[k]
         commit, err := getCommit(r.URL.Query().Get("repo"), versionChangeEvent.Hash)
@@ -54,8 +54,7 @@ func GetRepoHistory(w http.ResponseWriter, r *http.Request) {
             Commit: commit,
         })
     }
-    var versionChangeEventsJSON []byte
-    versionChangeEventsJSON, err = json.Marshal(response)
+    versionChangeEventsJSON, err := json.Marshal(response)
     if err != nil {
         log.Println(err.Error())
         return
