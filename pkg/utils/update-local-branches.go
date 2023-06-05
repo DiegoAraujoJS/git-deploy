@@ -36,7 +36,7 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
     }
 
 	err = remote.Fetch(&git.FetchOptions{
-		RefSpecs:   []config.RefSpec{"refs/heads/*:refs/remotes/origin/*"},
+		RefSpecs:   []config.RefSpec{"+refs/heads/*:refs/heads/*"},
 		Force:      true,
         Auth:       public_key,
 	})
