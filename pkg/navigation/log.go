@@ -2,7 +2,6 @@ package navigation
 
 import (
 	"log"
-	"strings"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 	"github.com/go-git/go-git/v5"
@@ -71,7 +70,7 @@ func GetAllCommits(repository string) []*Commit {
 
 func GetRepoTags(repository string) *RepoTags {
     repo := utils.Repositories[repository]
-    branches, err := repo.Storer.IterReferences()
+    branches, err := repo.Branches()
     if err != nil {
         log.Println(err.Error())
     }
@@ -81,9 +80,7 @@ func GetRepoTags(repository string) *RepoTags {
     for {
         branch, err := branches.Next()
         if branch == nil || err != nil { break }
-        if !strings.HasPrefix(branch.Name().String(), "refs/remotes/") {continue}
-        short_name := strings.Replace(branch.Name().String(), "refs/remotes/origin/", "", 1)
-        if short_name != "HEAD" {repo_branches = append(repo_branches, short_name)}
+        repo_branches = append(repo_branches, branch.Name().Short())
     }
     repo_tags.Branches = repo_branches
 
