@@ -71,6 +71,9 @@ func DeleteTimer(repo string) {
 }
 
 func fetchAndSendAction(config *AutobuildConfig) error {
+    navigation.Rw_lock.Lock()
+    defer navigation.Rw_lock.Unlock()
+
     config.Status = fetching
     repo := utils.Repositories[config.Repo]
 

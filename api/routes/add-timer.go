@@ -46,11 +46,24 @@ func DeleteTimer(w http.ResponseWriter, r *http.Request) {
     WriteError(&w, "Timer not found", http.StatusNotAcceptable)
 }
 
+// Frontend will expect an array of objects with this format on the response.
+// interface AutoUpdateStatus {
+//     Repo: string
+//     Seconds: number
+//     Branch: string
+//     Status: number
+// }
+
 func GetTimers(w http.ResponseWriter, r *http.Request) {
 
-    var configs = []*builddeploy.AutobuildConfig{}
+    var configs = []builddeploy.AutobuildConfig{}
     for _, timer := range builddeploy.ActiveTimers {
-        configs = append(configs, timer.Config)
+        configs = append(configs, builddeploy.AutobuildConfig{
+            Repo: timer.Config.Repo,
+            Seconds: timer.Config.Seconds,
+            Branch: timer.Config.Branch,
+            Status: timer.Config.Status,
+        })
     }
     WriteResponseOk(&w, configs)
 }

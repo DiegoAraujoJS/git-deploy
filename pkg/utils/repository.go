@@ -10,7 +10,11 @@ import (
 
 // Config is the struct that holds the configuration for the git repositories. 
 //
-// The configuration is read from a json file that is located in the root of the project. For deployment, the config.json is located on the same folder as the binary.
+// The configuration is read from a json file that is located in the root of the project.
+// For deployment, the config.json is located on the same folder as the binary as this:
+// .
+// ├── config.json
+// └── main
 
 var (
     Repositories = map[string]*git.Repository{}

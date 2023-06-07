@@ -29,14 +29,14 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
 
 	commits := navigation.GetAllCommits(r.URL.Query().Get("repo"))
     i, j := NormalizeSliceIndexes(len(commits), r)
-    slice_len := j - i
+    slice_length := j - i
 	// Filter by branch if branch is not empty
 	branch := r.URL.Query().Get("branch")
-    filtered_commits := make([]*navigation.Commit, 0, slice_len)
+    filtered_commits := make([]*navigation.Commit, 0, slice_length)
     count := 0
     for _, commit := range commits {
-        if count == slice_len { break }
-        if branch == "" || funk.Contains(commit.Branch, branch) {
+        if slice_length == len(filtered_commits) { break }
+        if branch == "" || funk.Contains(commit.Branches(), branch) {
             if count >= i {filtered_commits = append(filtered_commits, commit)}
             count++
         }

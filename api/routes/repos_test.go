@@ -224,11 +224,6 @@ func TestGetCommits(t *testing.T) {
         if _, ok := commit["Message"].(string); !ok {
             t.Error("Message not found in response list item.")
         }
-        branches, ok := commit["branches"].([]interface{})
-        if !ok || len(branches) < 1 {
-            t.Error("branches not found in response list item. or length not ok.")
-        }
-
     }
 }
 // func AddTimer(w http.ResponseWriter, r *http.Request) {

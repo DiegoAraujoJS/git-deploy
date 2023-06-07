@@ -2,18 +2,26 @@ package navigation
 
 import (
 	"log"
+	"sync"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-var All_commits map[string][]*Commit = map[string][]*Commit{}
+var (
+    All_commits map[string][]*Commit = map[string][]*Commit{}
+    Rw_lock = sync.RWMutex{}
+)
 
 type Commit struct {
     *object.Commit
     NewReference    string          `json:"new_reference"`
-    Branch          []string        `json:"branches"`
+    branches        []string
+}
+
+func (c *Commit) Branches() []string {
+    return c.branches
 }
 
 type RepoTags struct {
@@ -23,6 +31,9 @@ type RepoTags struct {
 }
 
 func GetAllCommits(repository string) []*Commit {
+    Rw_lock.Lock()
+    defer Rw_lock.Unlock()
+
     repo := utils.Repositories[repository]
 
     if _, ok := All_commits[repository]; !ok {
@@ -44,12 +55,12 @@ func GetAllCommits(repository string) []*Commit {
                 commit, err := log.Next()
                 if commit == nil || err != nil { break }
                 if payload, ok := commits_map[commit.Hash.String()] ; ok {
-                    payload.Branch = append(payload.Branch, branch.Name().Short())
+                    payload.branches = append(payload.branches, branch.Name().Short())
                     continue
                 }
                 commits_map[commit.Hash.String()] = &Commit{
                     Commit: commit,
-                    Branch: []string{branch.Name().Short()},
+                    branches: []string{branch.Name().Short()},
                 }
             }
         }
@@ -60,7 +71,7 @@ func GetAllCommits(repository string) []*Commit {
         }
         // Sort commits by date. The most recent is the first.
         All_commits[repository] = utils.MergeSort(All_commits[repository], func(n *Commit, m *Commit) bool {
-           return m.Committer.When.Before(n.Committer.When)
+            return m.Committer.When.Before(n.Committer.When)
         })
         // Sort branches by name.
     }
@@ -83,9 +94,8 @@ func GetRepoTags(repository string) *RepoTags {
         if branch == nil || err != nil { break }
         repo_branches = append(repo_branches, branch.Name().Short())
     }
-    repo_tags.Branches = repo_branches
 
-    repo_tags.Branches = utils.MergeSort(repo_tags.Branches, func(n string, m string) bool {
+    repo_tags.Branches = utils.MergeSort(repo_branches, func(n string, m string) bool {
         return n < m
     })
 
