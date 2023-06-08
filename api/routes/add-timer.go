@@ -22,6 +22,8 @@ func AddTimer(w http.ResponseWriter, r *http.Request) {
 
     if secs, err := strconv.Atoi(r.URL.Query().Get("seconds")); err == nil && secs >= 60 {
 
+        builddeploy.DeleteTimer(r.URL.Query().Get("repo"))
+
         builddeploy.AddTimer(&builddeploy.AutobuildConfig{
             Repo: r.URL.Query().Get("repo"),
             Seconds: secs,
