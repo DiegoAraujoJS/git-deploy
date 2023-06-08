@@ -28,5 +28,6 @@ func GetRepos(w http.ResponseWriter, r *http.Request) {
             }(repo)
         }
         wg.Wait()
+        navigation.All_commits = map[string][]*navigation.Commit{}
     }()
 }
