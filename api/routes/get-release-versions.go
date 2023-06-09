@@ -72,6 +72,7 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
 
     log_options := &git.LogOptions{
         All: true,
+        Order: git.LogOrderCommitterTime,
     }
     if branch != "" {
         ref, err := utils.GetBranch(repo, branch)
