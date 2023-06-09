@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
+	"github.com/DiegoAraujoJS/webdev-git-server/globals"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 	git "github.com/go-git/go-git/v5"
 )
@@ -71,11 +71,10 @@ func DeleteTimer(repo string) {
 }
 
 func fetchAndSendAction(config *AutobuildConfig) error {
-    navigation.Rw_lock.Lock()
-    defer navigation.Rw_lock.Unlock()
-
     config.Status = fetching
     repo := utils.Repositories[config.Repo]
+    globals.Get_commits_rw_mutex.Lock()
+    defer globals.Get_commits_rw_mutex.Unlock()
 
     branch, err := utils.GetBranch(repo, config.Branch)
     if err != nil {
@@ -98,7 +97,6 @@ func fetchAndSendAction(config *AutobuildConfig) error {
         return err
     }
     // We reset the map below to re-populate the commits.
-    navigation.All_commits = map[string][]*navigation.Commit{}
 
     branch, _ = utils.GetBranch(repo, config.Branch)
     new_commit := branch.Hash().String()

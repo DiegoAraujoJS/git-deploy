@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
+	"github.com/DiegoAraujoJS/webdev-git-server/globals"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 	"github.com/go-git/go-git/v5"
 )
@@ -18,8 +18,8 @@ func GetRepos(w http.ResponseWriter, r *http.Request) {
 
     go func() {
         wg := sync.WaitGroup{}
-        navigation.Rw_lock.Lock()
-        defer navigation.Rw_lock.Unlock()
+        globals.Get_commits_rw_mutex.Lock()
+        defer globals.Get_commits_rw_mutex.Unlock()
         for _, repo := range utils.Repositories {
             wg.Add(1)
             go func(repo *git.Repository) {
@@ -28,6 +28,5 @@ func GetRepos(w http.ResponseWriter, r *http.Request) {
             }(repo)
         }
         wg.Wait()
-        navigation.All_commits = map[string][]*navigation.Commit{}
     }()
 }

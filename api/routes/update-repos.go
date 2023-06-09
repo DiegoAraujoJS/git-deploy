@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/DiegoAraujoJS/webdev-git-server/pkg/navigation"
+	"github.com/DiegoAraujoJS/webdev-git-server/globals"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 	"github.com/go-git/go-git/v5"
 )
@@ -13,6 +13,8 @@ import (
 func UpdateRepos(w http.ResponseWriter, r *http.Request) {
 	wg := sync.WaitGroup{}
 	var errors []error
+    globals.Get_commits_rw_mutex.Lock()
+    defer globals.Get_commits_rw_mutex.Unlock()
 	for _, repo := range utils.Repositories {
 		wg.Add(1)
 		go func(repo *git.Repository) {
@@ -28,8 +30,5 @@ func UpdateRepos(w http.ResponseWriter, r *http.Request) {
 		WriteError(&w, string(json), http.StatusInternalServerError)
 		return
 	}
-    navigation.Rw_lock.Lock()
-	navigation.All_commits = map[string][]*navigation.Commit{}
-    navigation.Rw_lock.Unlock()
     WriteResponseOk(&w, "Repositories updated successfully 👌")
 }
