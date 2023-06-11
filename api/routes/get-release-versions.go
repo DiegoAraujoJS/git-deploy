@@ -97,20 +97,16 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
     //  NO      NO      YES         Get all commits from branch.
     //  NO      NO      NO          Get all commits. Sort.
 
-    if branch != "" || j_err != nil {
+    if branch != "" {
         var log_options = &git.LogOptions{
             Order: git.LogOrderCommitterTime,
         }
 
-        if branch != "" {
-            ref, err := utils.GetBranch(repo, branch)
-            log_options.From = ref.Hash()
-            if err != nil {
-                WriteError(&w, err.Error(), http.StatusNotFound)
-                return
-            }
-        } else {
-            log_options.All = true
+        ref, err := utils.GetBranch(repo, branch)
+        log_options.From = ref.Hash()
+        if err != nil {
+            WriteError(&w, err.Error(), http.StatusNotFound)
+            return
         }
 
         log, _ := repo.Log(log_options)
@@ -124,25 +120,21 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
         }
 
         for count := 0; err == nil && continue_loop(count, j); count++ {
-            if count >= i || branch == "" {
+            if count >= i {
                 filtered_commits = append(filtered_commits, c)
             }
             c, err = log.Next()
         }
-        if branch == "" {
-            if i_err == nil {
-                filtered_commits = utils.MergeSort(filtered_commits, committerWhenAfter)[i:]
-            } else {
-                filtered_commits = utils.MergeSort(filtered_commits, committerWhenAfter)
-            }
+    } else {
+        opts := &sortedCommitsOptions{
+            all: j_err != nil,
+            number: j,
         }
 
-    } else {
-        sorted_commits := getSortedCommitsMap(repo, j)
         if i_err == nil {
-            filtered_commits = sorted_commits[i:]
+            filtered_commits = getSortedCommitsMap(repo, opts)[i:]
         } else {
-            filtered_commits = sorted_commits
+            filtered_commits = getSortedCommitsMap(repo, opts)
         }
     }
 
