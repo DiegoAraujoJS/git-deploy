@@ -1,11 +1,9 @@
 package routes
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/globals"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
@@ -27,6 +25,9 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
 		WriteError(&w, "Repository not found", http.StatusNotFound)
 		return
 	}
+
+    globals.Get_commits_rw_mutex.RLock()
+    defer globals.Get_commits_rw_mutex.RUnlock()
 
     branches, err := repo.Branches()
     if err != nil {
@@ -61,7 +62,6 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
 
 
 func GetCommits(w http.ResponseWriter, r *http.Request) {
-    start := time.Now()
     repo, ok := utils.Repositories[r.URL.Query().Get("repo")]
 
     if !ok {
@@ -69,10 +69,10 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    branch := r.URL.Query().Get("branch")
-
     globals.Get_commits_rw_mutex.RLock()
     defer globals.Get_commits_rw_mutex.RUnlock()
+
+    branch := r.URL.Query().Get("branch")
 
     i, i_err := strconv.Atoi(r.URL.Query().Get("i"))
     j, j_err := strconv.Atoi(r.URL.Query().Get("j"))
@@ -139,5 +139,4 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
     }
 
     WriteResponseOk(&w, filtered_commits)
-    fmt.Println(time.Since(start))
 }
