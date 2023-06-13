@@ -30,32 +30,32 @@ func getSortedCommitsMap(repo *git.Repository, opts *sortedCommitsOptions) []*ob
     })
 
     var sorted = []*object.Commit{}
-    for {
-        // 2. Find the most recent commit by iterating over the set.
-        var most_recent *object.Commit
-        for _, commit := range set {
-            if most_recent == nil {
-                most_recent = commit
-                continue
-            }
-            if committerWhenAfter(commit, most_recent) {
-                most_recent = commit
-            }
+    // 2. Find the most recent commit by iterating over the set.
+    step_two:
+    var most_recent *object.Commit
+    for _, commit := range set {
+        if most_recent == nil {
+            most_recent = commit
+            continue
         }
-
-        // 3. Remove the element found in 2 from the set.
-        delete(set, most_recent.Hash)
-
-        // 4. Add the element found in 1 to a list.
-        sorted = append(sorted, most_recent)
-
-        // 5. If the element found in 2. has no parents, return the list of 4. Else add the parents of the element found in 2 to the set.
-        if most_recent.NumParents() == 0 || (len(sorted) == opts.number && !opts.all) {return sorted}
-        most_recent.Parents().ForEach(func(c *object.Commit) error {
-            set[c.Hash] = c
-            return nil
-        })
-
-        // 6. Go to 2.
+        if committerWhenAfter(commit, most_recent) {
+            most_recent = commit
+        }
     }
+
+    // 3. Remove the element found in 2 from the set.
+    delete(set, most_recent.Hash)
+
+    // 4. Add the element found in 1 to a list.
+    sorted = append(sorted, most_recent)
+
+    // 5. If the element found in 2. has no parents, return the list of 4. Else add the parents of the element found in 2 to the set.
+    if most_recent.NumParents() == 0 || (len(sorted) == opts.number && !opts.all) {return sorted}
+    most_recent.Parents().ForEach(func(c *object.Commit) error {
+        set[c.Hash] = c
+        return nil
+    })
+
+    // 6. Go to 2.
+    goto step_two
 }

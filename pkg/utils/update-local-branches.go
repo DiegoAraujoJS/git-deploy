@@ -4,11 +4,47 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/DiegoAraujoJS/webdev-git-server/globals"
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
+
+func pruneLocalBranches(repo *git.Repository) error {
+    remote, err := repo.Remote("origin")
+    if err != nil {
+        fmt.Println(err)
+        return err
+    }
+    refs, err := remote.List(&git.ListOptions{Auth: public_key})
+    if err != nil {
+        fmt.Println(err)
+        return err
+    }
+    globals.Get_commits_rw_mutex.Lock()
+    defer globals.Get_commits_rw_mutex.Unlock()
+    local_branches, err := repo.Branches()
+    if err != nil {
+        fmt.Println(err)
+        return err
+    }
+    var branch *plumbing.Reference
+    var branch_err error
+    local_branches_loop:
+    for branch_err == nil {
+        branch, branch_err = local_branches.Next()
+        if branch_err != nil { break }
+        for _, ref := range refs {
+            if ref.Name().IsBranch() && ref.Name().Short() == branch.Name().Short() {
+                continue local_branches_loop
+            }
+        }
+        fmt.Println("Deleting local branch that no longer exists on remote", branch.Name().String())
+        repo.Storer.RemoveReference(branch.Name())
+    }
+    return nil
+}
 
 var public_key *ssh.PublicKeys
 
@@ -36,6 +72,7 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
     }
 
 	err = remote.Fetch(&git.FetchOptions{
+        RemoteName: "origin",
 		RefSpecs:   []config.RefSpec{"+refs/heads/*:refs/heads/*"},
 		Force:      true,
         Auth:       public_key,
@@ -46,18 +83,11 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
 		return err
 	}
 
+    go pruneLocalBranches(repo)
+
 	return err
 }
 
 func GetBranch(repo *git.Repository, branch string) (*plumbing.Reference, error) {
-    branches, _ := repo.Branches()
-    for {
-        b, _ := branches.Next()
-        if b == nil {
-            return nil, fmt.Errorf("branch not found: %s", branch)
-        }
-        if b.Name().Short() == branch {
-            return b, nil
-        }
-    }
+    return repo.Storer.Reference(plumbing.NewBranchReferenceName(branch))
 }
