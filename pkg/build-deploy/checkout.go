@@ -18,9 +18,9 @@ func Checkout(action *Action) (*plumbing.Reference, error) {
 		return nil, err
 	}
 
-    action.Status.Stdout.WriteString("Checkout commit " + action.Hash + "\n")
+    action.Status.Stdout.WriteString("Checkout commit " + action.Hash.String() + "\n")
 	err = w.Checkout(&git.CheckoutOptions{
-		Hash: plumbing.NewHash(action.Hash),
+		Hash: action.Hash,
         Force: true,
 	})
 	if err != nil {

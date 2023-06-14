@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/database"
+	"github.com/go-git/go-git/v5/plumbing"
 )
 
 type Status struct {
@@ -17,7 +18,7 @@ type Status struct {
 type Action struct {
     ID      int
     Repo    string
-    Hash    string
+    Hash    plumbing.Hash
     Status  *Status
 }
 
@@ -49,7 +50,7 @@ const (
 
 func checkoutBuildInsert(action *Action) error {
     if action.ID == 0 { action.ID = GenerateActionID() }
-    log.Println("Received action", action.ID, action.Repo, action.Hash)
+    log.Println("Received action", action.ID, action.Repo, action.Hash.String())
     ActionStatus[action.ID] = action
     if action.Status == nil { action.Status = &Status{} }
     for _, v := range ActionStatus {

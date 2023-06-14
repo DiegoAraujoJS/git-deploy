@@ -29,12 +29,8 @@ func pruneLocalBranches(repo *git.Repository) error {
         fmt.Println(err)
         return err
     }
-    var branch *plumbing.Reference
-    var branch_err error
     local_branches_loop:
-    for branch_err == nil {
-        branch, branch_err = local_branches.Next()
-        if branch_err != nil { break }
+    for branch, branch_err := local_branches.Next(); branch_err == nil; branch, branch_err = local_branches.Next() {
         for _, ref := range refs {
             if ref.Name().IsBranch() && ref.Name().Short() == branch.Name().Short() {
                 continue local_branches_loop
@@ -78,7 +74,7 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
         Auth:       public_key,
 	})
 
-	if err != nil {
+	if err != nil && err != git.NoErrAlreadyUpToDate {
         fmt.Println("Error fetching remote", err)
 		return err
 	}

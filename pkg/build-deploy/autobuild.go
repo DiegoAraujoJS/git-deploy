@@ -81,7 +81,7 @@ func fetchAndSendAction(config *AutobuildConfig) error {
         config.Status = down
         return err
     }
-    last_commit := branch.Hash().String()
+    last_commit := branch.Hash()
 
     err = utils.ForceUpdateAllBranches(repo)
     if err == git.NoErrAlreadyUpToDate {
@@ -99,10 +99,10 @@ func fetchAndSendAction(config *AutobuildConfig) error {
     // We reset the map below to re-populate the commits.
 
     branch, _ = utils.GetBranch(repo, config.Branch)
-    new_commit := branch.Hash().String()
+    new_commit := branch.Hash()
 
     if last_commit != new_commit {
-        register := time.Now().Format("2006-01-02 15:04:05 ") + last_commit + " --> " + new_commit + "\n"
+        register := time.Now().Format("2006-01-02 15:04:05 ") + last_commit.String() + " --> " + new_commit.String() + "\n"
         config.LastFetch = time.Now()
         fmt.Println(register)
         config.Stdout.WriteString(register)

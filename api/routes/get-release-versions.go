@@ -37,9 +37,7 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
 
     repo_tags := &RepoTags{}
     repo_branches := []string{}
-    for {
-        branch, err := branches.Next()
-        if branch == nil || err != nil { break }
+    for branch, err := branches.Next(); err == nil; branch, err = branches.Next() {
         repo_branches = append(repo_branches, branch.Name().Short())
     }
 
@@ -88,25 +86,25 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
 
     //  i       j       branch      solution
 
-    //  YES     YES     YES         Get all commits from branch up to j. Filter from i.
-    //  YES     YES     NO          Get all commits up to j with map. Filter from i.
-    //  YES     NO      YES         Get all commits from branch. Filter from i.
-    //  YES     NO      NO          Get all commits. Sort. Filter from i.
+    //  YES     YES     YES         Get all commits from branch from i up to j.
+    //  YES     NO      YES         Get all commits from branch from i.
     //  NO      YES     YES         Get all commits from branch up to j.
-    //  NO      YES     NO          Get all commits up to j with map.
     //  NO      NO      YES         Get all commits from branch.
-    //  NO      NO      NO          Get all commits. Sort.
+    //  YES     YES     NO          Get all commits up to j with map. Filter from i.
+    //  YES     NO      NO          Get all commits with map. Filter from i.
+    //  NO      YES     NO          Get all commits up to j with map.
+    //  NO      NO      NO          Get all commits with map.
 
     if branch != "" {
-        var log_options = &git.LogOptions{
-            Order: git.LogOrderCommitterTime,
-        }
-
         ref, err := utils.GetBranch(repo, branch)
-        log_options.From = ref.Hash()
         if err != nil {
             WriteError(&w, err.Error(), http.StatusNotFound)
             return
+        }
+
+        var log_options = &git.LogOptions{
+            Order: git.LogOrderCommitterTime,
+            From: ref.Hash(),
         }
 
         log, _ := repo.Log(log_options)

@@ -19,17 +19,19 @@ type sortedCommitsOptions struct {
     number int
 }
 
+// This function is thought over the fact that the most recent commit of a git repository is one of its leafs. The most recent before that is either one of the parents of the most recent one or one of the leafs of the repository, and so on.
 func getSortedCommitsMap(repo *git.Repository, opts *sortedCommitsOptions) []*object.Commit {
+    var sorted = []*object.Commit{}
+
     // 1. Define the set of leafs
     var set = map[plumbing.Hash]*object.Commit{}
     branches, _ := repo.Branches()
-    branches.ForEach(func(r *plumbing.Reference) error {
-        c, _ := repo.CommitObject(r.Hash())
+    for r, err := branches.Next(); err == nil; r, err = branches.Next() {
+        c, c_err := repo.CommitObject(r.Hash())
+        if c_err != nil {continue}
         set[c.Hash] = c
-        return nil
-    })
+    }
 
-    var sorted = []*object.Commit{}
     // 2. Find the most recent commit by iterating over the set.
     step_two:
     var most_recent *object.Commit
@@ -43,19 +45,18 @@ func getSortedCommitsMap(repo *git.Repository, opts *sortedCommitsOptions) []*ob
         }
     }
 
-    // 3. Remove the element found in 2 from the set.
-    delete(set, most_recent.Hash)
-
-    // 4. Add the element found in 1 to a list.
+    // 3. Add the commit found in 2. to a list.
     sorted = append(sorted, most_recent)
 
-    // 5. If the element found in 2. has no parents, return the list of 4. Else add the parents of the element found in 2 to the set.
-    if most_recent.NumParents() == 0 || (len(sorted) == opts.number && !opts.all) {return sorted}
-    most_recent.Parents().ForEach(func(c *object.Commit) error {
-        set[c.Hash] = c
-        return nil
-    })
-
-    // 6. Go to 2.
-    goto step_two
+    // 4. If the commit found in 2. has no parents, return the list of 3. Else redefine the set (remove the commit found in 2., add its parents), and go to step 2.
+    if most_recent.NumParents() == 0 || (len(sorted) == opts.number && !opts.all) {
+        return sorted
+    } else {
+        delete(set, most_recent.Hash)
+        parents_iter := most_recent.Parents()
+        for c, err := parents_iter.Next(); err == nil; c, err = parents_iter.Next() {
+            set[c.Hash] = c
+        }
+        goto step_two
+    }
 }
