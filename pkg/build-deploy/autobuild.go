@@ -98,7 +98,13 @@ func fetchAndSendAction(config *AutobuildConfig) error {
     }
     // We reset the map below to re-populate the commits.
 
-    branch, _ = utils.GetBranch(repo, config.Branch)
+    branch, err = utils.GetBranch(repo, config.Branch)
+    if err != nil {
+        fmt.Println("Error getting branch", err.Error())
+        config.Status = down
+        config.Stderr.WriteString(time.Now().Format("2006-01-02 15:04:05") + " - Error getting branch\n" + err.Error() + "\n")
+        return err
+    }
     new_commit := branch.Hash()
 
     if last_commit != new_commit {
