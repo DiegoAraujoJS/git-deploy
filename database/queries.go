@@ -102,3 +102,27 @@ func SelectVersionChangeEvents(repo string) ([]*VersionChangeEvent, error) {
     version_cache[repo] = versionChangeEvents
     return versionChangeEvents, nil
 }
+
+// Gets the last version change event for a given repo.
+//
+// The format is a struct with the following form: {Hash: string, CreatedAt: string}. It returns an error if repo does not exist or if fails to select.
+func SelectLastVersionChangeEvent(repo string) (*VersionChangeEvent, error) {
+    repoId, err := getRepoId(repo)
+    if err != nil {
+        return nil, err
+    }
+    database, err := Connect()
+    if err != nil {
+        return nil, err
+    }
+    query := "SELECT hash, createdAt FROM History WHERE repoId = " + strconv.Itoa(repoId) + " ORDER BY createdAt DESC LIMIT 1"
+    var hash string
+    var createdAt string
+    if err := database.QueryRow(query).Scan(&hash, &createdAt); err != nil {
+        if err == sql.ErrNoRows {
+            fmt.Println("Failed to execute "+ query + "'", "No row that verifies condition.")
+        }
+        return nil, err
+    }
+    return &VersionChangeEvent{Hash: hash, CreatedAt: createdAt}, nil
+}

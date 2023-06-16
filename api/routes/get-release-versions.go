@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/DiegoAraujoJS/webdev-git-server/database"
 	"github.com/DiegoAraujoJS/webdev-git-server/globals"
 	"github.com/DiegoAraujoJS/webdev-git-server/pkg/utils"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
@@ -43,12 +45,17 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
 
     repo_tags.Branches = utils.MergeSort(repo_branches, sortByName)
 
-    head, err := repo.Head()
-    if err != nil {
-        log.Println(err.Error())
-        return
+    // We look for the hash of the last deploy. If we don't find it, then we look for the hash of the repo's head.
+    var hash plumbing.Hash
+    last_deploy, err := database.SelectLastVersionChangeEvent(r.URL.Query().Get("repo"))
+    if err == nil {
+        hash = plumbing.NewHash(last_deploy.Hash)
+    } else {
+        repo_head, _ := repo.Head()
+        hash = repo_head.Hash()
     }
-    head_commit, err := repo.CommitObject(head.Hash())
+    head_commit, err := repo.CommitObject(hash)
+    
     if err != nil {
         log.Println(err.Error())
         return
