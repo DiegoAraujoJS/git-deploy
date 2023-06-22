@@ -48,9 +48,13 @@ func AddTimer(config *AutobuildConfig) *time.Ticker{
     }
 
     go func () {
-        for t := range new_chan.C {
-            fmt.Println(t, "Tick", config.Repo)
-            if (config.Status == ready) {fetchAndSendAction(config)}
+        for range new_chan.C {
+            if config.Status == ready {
+                go func () {
+                    defer globals.GenericRecover()
+                    fetchAndSendAction(config)
+                } ()
+            }
 
             if config.LastFetch.Add(time.Duration(24) * time.Hour).Before(time.Now()) {
                 fmt.Println("Automatically stopping timer for", config.Repo)

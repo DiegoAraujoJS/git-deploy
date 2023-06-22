@@ -79,7 +79,10 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
 		return err
 	}
 
-    go pruneLocalBranches(repo)
+    go func (repo *git.Repository) {
+        defer globals.GenericRecover()
+        pruneLocalBranches(repo)
+    }(repo)
 
 	return err
 }

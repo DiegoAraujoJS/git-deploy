@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -18,10 +19,15 @@ func updateRepos () []error {
     for _, repo := range utils.Repositories {
         wg.Add(1)
         go func(repo *git.Repository) {
+            defer wg.Done()
+            defer func (){
+                if r := recover(); r != nil {
+                    errors = append(errors, fmt.Errorf(r.(string)))
+                }
+            }()
             if error := utils.ForceUpdateAllBranches(repo); error != nil && error != git.ErrRemoteNotFound && error != git.NoErrAlreadyUpToDate {
                 errors = append(errors, error)
             }
-            wg.Done()
         }(repo)
     }
     wg.Wait()

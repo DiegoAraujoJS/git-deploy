@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/DiegoAraujoJS/webdev-git-server/database"
+	"github.com/DiegoAraujoJS/webdev-git-server/globals"
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
@@ -36,7 +37,10 @@ var StatusDict = map[int8]string {
 func init () {
     go func () {
         for action := range CheckoutBuildInsertChan {
-            go checkoutBuildInsert(action)
+            go func (action *Action) {
+                defer globals.GenericRecover()
+                checkoutBuildInsert(action)
+            }(action)
         }
     }()
 }

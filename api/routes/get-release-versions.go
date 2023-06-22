@@ -21,12 +21,12 @@ type RepoTags struct {
 
 
 func GetRepoTags(w http.ResponseWriter, r *http.Request) {
-	repo, ok := utils.Repositories[r.URL.Query().Get("repo")]
+    repo, ok := utils.Repositories[r.URL.Query().Get("repo")]
 
-	if !ok {
-		WriteError(&w, "Repository not found", http.StatusNotFound)
-		return
-	}
+    if !ok {
+        WriteError(&w, "Repository not found", http.StatusNotFound)
+        return
+    }
 
     globals.Get_commits_rw_mutex.RLock()
     defer globals.Get_commits_rw_mutex.RUnlock()
@@ -43,7 +43,9 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
         repo_branches = append(repo_branches, branch.Name().Short())
     }
 
-    repo_tags.Branches = utils.MergeSort(repo_branches, sortByName)
+    repo_tags.Branches = utils.MergeSort(repo_branches, func (n string, m string) bool {
+        return n < m
+    })
 
     // We look for the hash of the last deploy. If we don't find it, then we look for the hash of the repo's head.
     var hash plumbing.Hash
@@ -55,7 +57,7 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
         hash = repo_head.Hash()
     }
     head_commit, err := repo.CommitObject(hash)
-    
+
     if err != nil {
         log.Println(err.Error())
         return
