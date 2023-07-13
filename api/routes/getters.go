@@ -51,12 +51,11 @@ func getSortedCommitsMap(repo *git.Repository, opts *sortedCommitsOptions) []*ob
     // 4. If the commit found in 2. has no parents, return the list of 3. Else redefine the set (remove the commit found in 2., add its parents), and go to step 2.
     if most_recent.NumParents() == 0 || (len(sorted) == opts.number && !opts.all) {
         return sorted
-    } else {
-        delete(set, most_recent.Hash)
-        parents_iter := most_recent.Parents()
-        for c, err := parents_iter.Next(); err == nil; c, err = parents_iter.Next() {
-            set[c.Hash] = c
-        }
-        goto step_two
     }
+    delete(set, most_recent.Hash)
+    parents_iter := most_recent.Parents()
+    for c, err := parents_iter.Next(); err == nil; c, err = parents_iter.Next() {
+        set[c.Hash] = c
+    }
+    goto step_two
 }

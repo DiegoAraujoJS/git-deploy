@@ -18,12 +18,6 @@ func CreateTables() {
         return
 	}
 
-	err = db.Ping()
-	if err != nil {
-		log.Println("Error while pinging database:", err.Error())
-        return
-	}
-
 	createTableReposQuery := `IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Repos' and xtype='U') CREATE TABLE Repos (
 		id INTEGER IDENTITY(1,1) PRIMARY KEY,		
         repo VARCHAR(50) NOT NULL UNIQUE
@@ -68,12 +62,18 @@ func Connect() (*sql.DB, error) {
     } else {
         conn_string = "server=" + utils.ConfigValue.Database.Server + ";user id=" + ";database=" + utils.ConfigValue.Database.Name + ";trusted_connection=yes;"
     }
-    fmt.Println("Connecting to database with connection string:", conn_string)
+    fmt.Println("Attempting to connect to database with connection string:", conn_string)
     new_sql_database, err := sql.Open("sqlserver", conn_string)
     if err != nil {
         log.Println("Error while opening database connection:", err.Error())
         return nil, err
     }
+	err = new_sql_database.Ping()
+	if err != nil {
+		log.Println("Error while pinging database:", err.Error())
+        defer new_sql_database.Close()
+        return nil, err
+	}
     sql_database = new_sql_database
     fmt.Println("Successfully connected to database")
     return sql_database, err

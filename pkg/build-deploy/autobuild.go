@@ -100,7 +100,6 @@ func fetchAndSendAction(config *AutobuildConfig) error {
         config.Stderr.WriteString(time.Now().Format("2006-01-02 15:04:05") + " - Error fetching\n" + err.Error() + "\n")
         return err
     }
-    // We reset the map below to re-populate the commits.
 
     branch, err = utils.GetBranch(repo, config.Branch)
     if err != nil {

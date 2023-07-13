@@ -69,6 +69,18 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
 
 
 func GetCommits(w http.ResponseWriter, r *http.Request) {
+
+    //  i       j       branch      solution
+
+    //  YES     YES     YES         Get all commits from branch from i up to j.
+    //  YES     NO      YES         Get all commits from branch from i.
+    //  NO      YES     YES         Get all commits from branch up to j.
+    //  NO      NO      YES         Get all commits from branch.
+    //  YES     YES     NO          Get all commits up to j with map. Filter from i.
+    //  YES     NO      NO          Get all commits with map. Filter from i.
+    //  NO      YES     NO          Get all commits up to j with map.
+    //  NO      NO      NO          Get all commits with map.
+
     repo, ok := utils.Repositories[r.URL.Query().Get("repo")]
 
     if !ok {
@@ -78,8 +90,6 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
 
     globals.Get_commits_rw_mutex.RLock()
     defer globals.Get_commits_rw_mutex.RUnlock()
-
-    branch := r.URL.Query().Get("branch")
 
     i, i_err := strconv.Atoi(r.URL.Query().Get("i"))
     j, j_err := strconv.Atoi(r.URL.Query().Get("j"))
@@ -93,16 +103,7 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
         filtered_commits = make([]*object.Commit, 0)
     }
 
-    //  i       j       branch      solution
-
-    //  YES     YES     YES         Get all commits from branch from i up to j.
-    //  YES     NO      YES         Get all commits from branch from i.
-    //  NO      YES     YES         Get all commits from branch up to j.
-    //  NO      NO      YES         Get all commits from branch.
-    //  YES     YES     NO          Get all commits up to j with map. Filter from i.
-    //  YES     NO      NO          Get all commits with map. Filter from i.
-    //  NO      YES     NO          Get all commits up to j with map.
-    //  NO      NO      NO          Get all commits with map.
+    branch := r.URL.Query().Get("branch")
 
     if branch != "" {
         ref, err := utils.GetBranch(repo, branch)

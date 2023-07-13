@@ -11,13 +11,33 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
+var public_key *ssh.PublicKeys
+
+func getSshKey () *ssh.PublicKeys {
+    if public_key != nil {
+        return public_key
+    }
+    ssh_key, err := ioutil.ReadFile(ConfigValue.Credentials.Ssh)
+    if err != nil {
+        fmt.Println("Error reading private key from " + ConfigValue.Credentials.Ssh, err)
+        return nil
+    }
+    public_key, err = ssh.NewPublicKeys("git", ssh_key, "")
+    if err != nil {
+        fmt.Println("Error creating public key", err)
+        return nil
+    }
+    return public_key
+}
+
+
 func pruneLocalBranches(repo *git.Repository) error {
     remote, err := repo.Remote("origin")
     if err != nil {
         fmt.Println(err)
         return err
     }
-    refs, err := remote.List(&git.ListOptions{Auth: public_key})
+    refs, err := remote.List(&git.ListOptions{Auth: getSshKey()})
     if err != nil {
         fmt.Println(err)
         return err
@@ -42,8 +62,6 @@ func pruneLocalBranches(repo *git.Repository) error {
     return nil
 }
 
-var public_key *ssh.PublicKeys
-
 // This function fetches origin with a Force flag set to true, which causes all local branches to be updated to match their remote counterparts. The function then iterates over the remote branches and force-updates the local branches accordingly.
 func ForceUpdateAllBranches(repo *git.Repository) error {
 	// Fetch the remote
@@ -54,24 +72,11 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
 		return err
 	}
 
-    if public_key == nil {
-        ssh_key, _ := ioutil.ReadFile(ConfigValue.Credentials.Ssh)
-        if err != nil {
-            fmt.Println("Error reading private key from " + ConfigValue.Credentials.Ssh, err)
-            return err
-        }
-        public_key, err = ssh.NewPublicKeys("git", []byte(ssh_key), "")
-        if err != nil {
-            fmt.Println("Error creating public key", err)
-            return err
-        }
-    }
-
 	err = remote.Fetch(&git.FetchOptions{
         RemoteName: "origin",
 		RefSpecs:   []config.RefSpec{"+refs/heads/*:refs/heads/*"},
 		Force:      true,
-        Auth:       public_key,
+        Auth:       getSshKey(),
 	})
 
 	if err != nil && err != git.NoErrAlreadyUpToDate {
@@ -90,3 +95,4 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
 func GetBranch(repo *git.Repository, branch string) (*plumbing.Reference, error) {
     return repo.Storer.Reference(plumbing.NewBranchReferenceName(branch))
 }
+
