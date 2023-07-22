@@ -2,13 +2,14 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 
 	"github.com/go-git/go-git/v5"
 )
 
-// Config is the struct that holds the configuration for the git repositories. 
+// Config is the struct that holds the configuration for the git repositories.
 //
 // The configuration is read from a json file that is located in the root of the project.
 // For deployment, the config.json is located on the same folder as the binary as this:
@@ -36,6 +37,7 @@ var (
             Password    string
             Ssh         string
         }
+        CliBinaryForCheckout string
     }
 
 )
@@ -46,6 +48,8 @@ func Connect() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+
+    fmt.Println(ConfigValue)
 
 	err = json.Unmarshal(content, &ConfigValue)
 
