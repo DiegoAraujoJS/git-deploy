@@ -49,8 +49,6 @@ func Connect() {
 		log.Fatal(err.Error())
 	}
 
-    fmt.Println(ConfigValue)
-
 	err = json.Unmarshal(content, &ConfigValue)
 
 	if err != nil {

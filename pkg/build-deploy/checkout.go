@@ -13,6 +13,12 @@ import (
 
 // This function will call "git checkout <hash>" on the repository. It will not use the Checkout function from the go-git library as it has big performance problems in windows. It uses the git CLI tool.
 func checkoutFromCli (action *Action) error {
+    if utils.ConfigValue.CliBinaryForCheckout == "" { return fmt.Errorf("no cli binary for checkout") }
+    // Save the current path
+    current_wd_path, err := os.Getwd()
+    if err != nil {
+        return fmt.Errorf("error while getting current path -> "+err.Error())
+    }
     // Find the repository path by iterating over utils.ConfigValue.Directories
     var repoPath string
     for _, v := range utils.ConfigValue.Directories {
@@ -24,13 +30,11 @@ func checkoutFromCli (action *Action) error {
         log.Println("Repository not found")
         return fmt.Errorf("repository not found")
     }
-    // Save the current path
-    current_path, err := os.Getwd()
-    if err != nil {
-        return err
-    }
     // Change dir to the directory and run the command
-    os.Chdir(repoPath)
+    err = os.Chdir(repoPath)
+    if err != nil {
+        return fmt.Errorf("error while changing directory -> "+err.Error())
+    }
     cmd := exec.Command(utils.ConfigValue.CliBinaryForCheckout, "checkout", "--force", "--quiet", action.Hash.String())
     cmd.Stdout = action.Status.Stdout
     cmd.Stderr = action.Status.Stderr
@@ -40,21 +44,20 @@ func checkoutFromCli (action *Action) error {
         action.Status.Stderr.WriteString(err.Error())
         return err
     }
-    os.Chdir(current_path)
-    return nil
+    // Change again to the original directory, so not to make any change to the working directory state.
+    return os.Chdir(current_wd_path)
 }
 
 func Checkout(action *Action) (*plumbing.Reference, error) {
 	repo := utils.Repositories[action.Repo]
-
 
     action.Status.Stdout.WriteString("Checkout commit " + action.Hash.String() + "\n")
     var err error
     if utils.ConfigValue.CliBinaryForCheckout != "" {
         err = checkoutFromCli(action)
     } else {
-        w, err := repo.Worktree()
-        if err != nil {
+        w, w_err := repo.Worktree()
+        if w_err != nil {
             log.Println("Error while getting repository worktree -> "+err.Error())
             action.Status.Stderr.WriteString(err.Error())
             return nil, err
