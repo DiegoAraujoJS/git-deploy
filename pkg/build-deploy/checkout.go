@@ -15,9 +15,9 @@ import (
 func checkoutFromCli (action *Action) error {
     if utils.ConfigValue.CliBinaryForCheckout == "" { return fmt.Errorf("no cli binary for checkout") }
     // Save the current path
-    current_wd_path, err := os.Getwd()
+    original_wd_path, err := os.Getwd()
     if err != nil {
-        return fmt.Errorf("error while getting current path -> "+err.Error())
+        return err
     }
     // Find the repository path by iterating over utils.ConfigValue.Directories
     var repoPath string
@@ -27,25 +27,20 @@ func checkoutFromCli (action *Action) error {
         }
     }
     if repoPath == "" {
-        log.Println("Repository not found")
         return fmt.Errorf("repository not found")
     }
-    // Change dir to the directory and run the command
-    err = os.Chdir(repoPath)
-    if err != nil {
-        return fmt.Errorf("error while changing directory -> "+err.Error())
+    // Change dir to repository path and run the command
+    if err = os.Chdir(repoPath); err != nil {
+        return err
     }
     cmd := exec.Command(utils.ConfigValue.CliBinaryForCheckout, "checkout", "--force", "--quiet", action.Hash.String())
     cmd.Stdout = action.Status.Stdout
     cmd.Stderr = action.Status.Stderr
-    err = cmd.Run()
-    if err != nil {
-        log.Println("Error while running git checkout -> "+err.Error())
-        action.Status.Stderr.WriteString(err.Error())
+    if err = cmd.Run(); err != nil {
         return err
     }
     // Change again to the original directory, so not to make any change to the working directory state.
-    return os.Chdir(current_wd_path)
+    return os.Chdir(original_wd_path)
 }
 
 func Checkout(action *Action) (*plumbing.Reference, error) {

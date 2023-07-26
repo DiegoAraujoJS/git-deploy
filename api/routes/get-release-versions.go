@@ -112,12 +112,10 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        var log_options = &git.LogOptions{
+        log, _ := repo.Log(&git.LogOptions{
             Order: git.LogOrderCommitterTime,
             From: ref.Hash(),
-        }
-
-        log, _ := repo.Log(log_options)
+        })
         c, err := log.Next()
 
         var continue_loop = func (count int, j int) bool {
