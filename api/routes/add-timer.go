@@ -9,13 +9,13 @@ import (
 )
 
 func AddTimer(w http.ResponseWriter, r *http.Request) {
-    repo, ok := utils.Repositories[r.URL.Query().Get("repo")]
+    app, ok := utils.Applications[r.URL.Query().Get("repo")]
     if !ok {
         WriteError(&w, "Repository " + r.URL.Query().Get("repo") + " not found", http.StatusNotAcceptable)
         return
     }
 
-    if _, err := utils.GetBranch(repo, r.URL.Query().Get("branch")); err != nil {
+    if _, err := utils.GetBranch(app.Repo, r.URL.Query().Get("branch")); err != nil {
         WriteError(&w, "Branch " + r.URL.Query().Get("branch") + " not found", http.StatusNotAcceptable)
         return
     }
@@ -25,7 +25,7 @@ func AddTimer(w http.ResponseWriter, r *http.Request) {
         builddeploy.DeleteTimer(r.URL.Query().Get("repo"))
 
         builddeploy.AddTimer(&builddeploy.AutobuildConfig{
-            Repo: r.URL.Query().Get("repo"),
+            App: r.URL.Query().Get("repo"),
             Seconds: secs,
             Branch: r.URL.Query().Get("branch"),
         })
@@ -48,20 +48,11 @@ func DeleteTimer(w http.ResponseWriter, r *http.Request) {
     WriteError(&w, "Timer not found", http.StatusNotAcceptable)
 }
 
-// Frontend will expect an array of objects with this format on the response.
-// interface AutoUpdateStatus {
-//     Repo: string
-//     Seconds: number
-//     Branch: string
-//     Status: number
-// }
-
 func GetTimers(w http.ResponseWriter, r *http.Request) {
-
     var configs = []builddeploy.AutobuildConfig{}
     for _, timer := range builddeploy.ActiveTimers {
         configs = append(configs, builddeploy.AutobuildConfig{
-            Repo: timer.Config.Repo,
+            App: timer.Config.App,
             Seconds: timer.Config.Seconds,
             Branch: timer.Config.Branch,
             Status: timer.Config.Status,

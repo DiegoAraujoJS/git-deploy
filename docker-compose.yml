@@ -1,0 +1,29 @@
+version: '3.7'
+services:
+  # SQL Server container
+  database:
+    image: mcr.microsoft.com/mssql/server
+    environment:
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+      MSSQL_DB: babylon
+    command:
+      - /bin/bash
+      - -c
+      - |
+        /opt/mssql/bin/sqlservr &
+        sleep 20
+        /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "YourStrong!Passw0rd" -Q "CREATE DATABASE babylon"
+
+  # Golang HTTP server container
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    volumes:
+      - .:/app
+      - ./tests/config.json:/app/main/config.json
+    depends_on:
+      - database
+    command: tail -f /dev/null

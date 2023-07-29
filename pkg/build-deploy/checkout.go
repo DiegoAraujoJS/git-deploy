@@ -19,16 +19,10 @@ func checkoutFromCli (action *Action) error {
     if err != nil {
         return err
     }
-    // Find the repository path by iterating over utils.ConfigValue.Directories
-    var repoPath string
-    for _, v := range utils.ConfigValue.Directories {
-        if v.Name == action.Repo {
-            repoPath = v.Directory
-        }
-    }
-    if repoPath == "" {
-        return fmt.Errorf("repository not found")
-    }
+    // Find the repository path.
+    var app, ok = utils.Applications[action.App]
+    if !ok { return fmt.Errorf("repository not found") }
+    var repoPath = app.Directory
     // Change dir to repository path and run the command
     if err = os.Chdir(repoPath); err != nil {
         return err
@@ -44,14 +38,14 @@ func checkoutFromCli (action *Action) error {
 }
 
 func Checkout(action *Action) (*plumbing.Reference, error) {
-	repo := utils.Repositories[action.Repo]
+	app := utils.Applications[action.App]
 
     action.Status.Stdout.WriteString("Checkout commit " + action.Hash.String() + "\n")
     var err error
     if utils.ConfigValue.CliBinaryForCheckout != "" {
         err = checkoutFromCli(action)
     } else {
-        w, w_err := repo.Worktree()
+        w, w_err := app.Repo.Worktree()
         if w_err != nil {
             log.Println("Error while getting repository worktree -> "+err.Error())
             action.Status.Stderr.WriteString(err.Error())
@@ -68,7 +62,7 @@ func Checkout(action *Action) (*plumbing.Reference, error) {
 		return nil, err
 	}
 
-	ref, err := repo.Head()
+	ref, err := app.Repo.Head()
 	if err != nil {
         log.Println("Error while getting repository head -> "+err.Error())
         action.Status.Stderr.WriteString(err.Error())

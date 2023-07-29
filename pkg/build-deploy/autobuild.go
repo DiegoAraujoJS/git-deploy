@@ -11,7 +11,7 @@ import (
 )
 
 type AutobuildConfig struct {
-    Repo    string
+    App    string
     Seconds int
     Branch  string
     Status  int8
@@ -42,7 +42,7 @@ func AddTimer(config *AutobuildConfig) *time.Ticker{
     if config.Stdout == nil { config.Stdout = &bytes.Buffer{} }
     if config.Stderr == nil { config.Stderr = &bytes.Buffer{} }
     if config.LastFetch.IsZero() { config.LastFetch = time.Now() }
-    ActiveTimers[config.Repo] = &AutobuildTimers{
+    ActiveTimers[config.App] = &AutobuildTimers{
         Timer: new_chan,
         Config: config,
     }
@@ -57,8 +57,8 @@ func AddTimer(config *AutobuildConfig) *time.Ticker{
             }
 
             if config.LastFetch.Add(time.Duration(24) * time.Hour).Before(time.Now()) {
-                fmt.Println("Automatically stopping timer for", config.Repo)
-                DeleteTimer(config.Repo)
+                fmt.Println("Automatically stopping timer for", config.App)
+                DeleteTimer(config.App)
                 return
             }
         }
@@ -76,18 +76,18 @@ func DeleteTimer(repo string) {
 
 func fetchAndSendAction(config *AutobuildConfig) error {
     config.Status = fetching
-    repo := utils.Repositories[config.Repo]
+    app := utils.Applications[config.App]
     globals.Get_commits_rw_mutex.Lock()
     defer globals.Get_commits_rw_mutex.Unlock()
 
-    branch, err := utils.GetBranch(repo, config.Branch)
+    branch, err := utils.GetBranch(app.Repo, config.Branch)
     if err != nil {
         config.Status = down
         return err
     }
     last_commit := branch.Hash()
 
-    err = utils.ForceUpdateAllBranches(repo)
+    err = utils.ForceUpdateAllBranches(app.Repo)
     if err == git.NoErrAlreadyUpToDate {
         fmt.Println("Already up to date")
         config.Status = ready
@@ -101,7 +101,7 @@ func fetchAndSendAction(config *AutobuildConfig) error {
         return err
     }
 
-    branch, err = utils.GetBranch(repo, config.Branch)
+    branch, err = utils.GetBranch(app.Repo, config.Branch)
     if err != nil {
         fmt.Println("Error getting branch", err.Error())
         config.Status = down
@@ -117,7 +117,7 @@ func fetchAndSendAction(config *AutobuildConfig) error {
         config.Stdout.WriteString(register)
 
         CheckoutBuildInsertChan <- &Action{
-            Repo: config.Repo,
+            App: config.App,
             Hash: new_commit,
             Status: &Status{
                 Stdout: config.Stdout,

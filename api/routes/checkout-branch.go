@@ -15,7 +15,7 @@ type CheckoutResponse struct {
 }
 
 func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
-    repo, ok := utils.Repositories[r.URL.Query().Get("repo")]
+    app, ok := utils.Applications[r.URL.Query().Get("repo")]
 
     if !ok {
         WriteError(&w, "Repository not found", http.StatusNotFound)
@@ -23,7 +23,7 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
     }
 
     // In the line below we check that the commit belongs to the repository.
-    ref, err := repo.CommitObject(plumbing.NewHash(r.URL.Query().Get("commit")))
+    ref, err := app.Repo.CommitObject(plumbing.NewHash(r.URL.Query().Get("commit")))
     if err != nil {
         WriteError(&w, "Commit not found", http.StatusNotFound)
         return
@@ -31,7 +31,7 @@ func CheckoutBranch(w http.ResponseWriter, r *http.Request) {
 
     action := &builddeploy.Action{
         ID: builddeploy.GenerateActionID(),
-        Repo: r.URL.Query().Get("repo"),
+        App: r.URL.Query().Get("repo"),
         Hash: ref.Hash,
     }
 

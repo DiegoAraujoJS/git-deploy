@@ -18,7 +18,7 @@ type Status struct {
 
 type Action struct {
     ID      int
-    Repo    string
+    App     string
     Hash    plumbing.Hash
     Status  *Status
 }
@@ -54,11 +54,11 @@ const (
 
 func checkoutBuildInsert(action *Action) error {
     if action.ID == 0 { action.ID = GenerateActionID() }
-    log.Println("Received action", action.ID, action.Repo, action.Hash.String())
+    log.Println("Received action", action.ID, action.App, action.Hash.String())
     ActionStatus[action.ID] = action
     if action.Status == nil { action.Status = &Status{} }
     for _, v := range ActionStatus {
-        if v.Repo == action.Repo && v.Status.Moment != inactive && v.ID != action.ID {
+        if v.App == action.App && v.Status.Moment != inactive && v.ID != action.ID {
             return nil
         }
     }
@@ -77,7 +77,7 @@ func checkoutBuildInsert(action *Action) error {
         return build_err
     }
     action.Status.Moment = registering
-    if query_error := database.InsertVersionChangeEvent(action.Repo, checkout_result.Hash().String()); query_error != nil {
+    if query_error := database.InsertVersionChangeEvent(action.App, checkout_result.Hash().String()); query_error != nil {
         action.Status.Moment = inactive
         action.Status.Stderr.WriteString(err.Error())
         return query_error

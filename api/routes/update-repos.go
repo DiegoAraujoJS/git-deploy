@@ -12,11 +12,11 @@ import (
 )
 
 func updateRepos () []error {
-    wg := sync.WaitGroup{}
     globals.Get_commits_rw_mutex.Lock()
     defer globals.Get_commits_rw_mutex.Unlock()
+    wg := sync.WaitGroup{}
 	var errors []error
-    for _, repo := range utils.Repositories {
+    for _, repo := range utils.Applications.GetAllRepos() {
         wg.Add(1)
         go func(repo *git.Repository) {
             defer wg.Done()

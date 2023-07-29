@@ -1,0 +1,20 @@
+FROM golang:1.20
+
+# Create dummy repository
+COPY ./tests/create_repo.sh /dummy_repos/create_repo.sh
+RUN mkdir -p /dummy_repos
+RUN cd /dummy_repos && chmod +x create_repo.sh && ./create_repo.sh
+
+WORKDIR /app/main
+
+COPY . /app
+
+RUN go build
+
+# Ensure the directory exists
+RUN mkdir -p /app/main
+
+# Copy the specific config file
+COPY ./tests/config.json /app/main/config.json
+
+CMD ["./main"]

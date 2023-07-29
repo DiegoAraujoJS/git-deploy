@@ -21,7 +21,7 @@ type RepoTags struct {
 
 
 func GetRepoTags(w http.ResponseWriter, r *http.Request) {
-    repo, ok := utils.Repositories[r.URL.Query().Get("repo")]
+    app, ok := utils.Applications[r.URL.Query().Get("repo")]
 
     if !ok {
         WriteError(&w, "Repository not found", http.StatusNotFound)
@@ -31,7 +31,7 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
     globals.Get_commits_rw_mutex.RLock()
     defer globals.Get_commits_rw_mutex.RUnlock()
 
-    branches, err := repo.Branches()
+    branches, err := app.Repo.Branches()
     if err != nil {
         log.Println(err.Error())
         return
@@ -53,10 +53,10 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
     if err == nil {
         hash = plumbing.NewHash(last_deploy.Hash)
     } else {
-        repo_head, _ := repo.Head()
+        repo_head, _ := app.Repo.Head()
         hash = repo_head.Hash()
     }
-    head_commit, err := repo.CommitObject(hash)
+    head_commit, err := app.Repo.CommitObject(hash)
 
     if err != nil {
         log.Println(err.Error())
@@ -81,7 +81,7 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
     //  NO      YES     NO          Get all commits up to j with map.
     //  NO      NO      NO          Get all commits with map.
 
-    repo, ok := utils.Repositories[r.URL.Query().Get("repo")]
+    app, ok := utils.Applications[r.URL.Query().Get("repo")]
 
     if !ok {
         WriteError(&w, "Repository not found", http.StatusNotFound)
@@ -106,13 +106,13 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
     branch := r.URL.Query().Get("branch")
 
     if branch != "" {
-        ref, err := utils.GetBranch(repo, branch)
+        ref, err := utils.GetBranch(app.Repo, branch)
         if err != nil {
             WriteError(&w, err.Error(), http.StatusNotFound)
             return
         }
 
-        log, _ := repo.Log(&git.LogOptions{
+        log, _ := app.Repo.Log(&git.LogOptions{
             Order: git.LogOrderCommitterTime,
             From: ref.Hash(),
         })
@@ -138,9 +138,9 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
         }
 
         if i_err == nil {
-            filtered_commits = getSortedCommitsMap(repo, opts)[i:]
+            filtered_commits = getSortedCommitsMap(app.Repo, opts)[i:]
         } else {
-            filtered_commits = getSortedCommitsMap(repo, opts)
+            filtered_commits = getSortedCommitsMap(app.Repo, opts)
         }
     }
 

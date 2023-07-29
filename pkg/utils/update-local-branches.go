@@ -64,6 +64,8 @@ func pruneLocalBranches(repo *git.Repository) error {
 
 // This function fetches origin with a Force flag set to true, which causes all local branches to be updated to match their remote counterparts. The function then iterates over the remote branches and force-updates the local branches accordingly.
 func ForceUpdateAllBranches(repo *git.Repository) error {
+    sshKey := getSshKey()
+    if sshKey == nil {return nil}
 	// Fetch the remote
 	remote, err := repo.Remote("origin")
 
@@ -76,7 +78,7 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
         RemoteName: "origin",
 		RefSpecs:   []config.RefSpec{"+refs/heads/*:refs/heads/*"},
 		Force:      true,
-        Auth:       getSshKey(),
+        Auth:       sshKey,
 	})
 
 	if err != nil && err != git.NoErrAlreadyUpToDate {
