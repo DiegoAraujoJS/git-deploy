@@ -2,7 +2,7 @@ version: '3.7'
 services:
   # SQL Server container
   database:
-    image: mcr.microsoft.com/mssql/server
+    image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       SA_PASSWORD: "YourStrong!Passw0rd"
       ACCEPT_EULA: "Y"

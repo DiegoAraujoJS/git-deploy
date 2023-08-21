@@ -11,16 +11,16 @@ git init
 
 # Create 3 commits in the master branch
 for i in {1..3}; do
-  touch master${i}.txt
-  git add master${i}.txt
+  touch "master${i}.txt"
+  git add "master${i}.txt"
   git commit -m "master commit ${i}"
 done
 
 # Create branch_A and add 3 commits
 git checkout -b branch_A
 for i in {1..3}; do
-  touch branch_A${i}.txt
-  git add branch_A${i}.txt
+  touch "branch_A${i}.txt"
+  git add "branch_A${i}.txt"
   git commit -m "branch_A commit ${i}"
 done
 
@@ -28,8 +28,8 @@ done
 git checkout master
 git checkout -b branch_B
 for i in {1..3}; do
-  touch branch_B${i}.txt
-  git add branch_B${i}.txt
+  touch "branch_B${i}.txt"
+  git add "branch_B${i}.txt"
   git commit -m "branch_B commit ${i}"
 done
 
