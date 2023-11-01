@@ -305,6 +305,7 @@ func TestGetTimers(t *testing.T) {
     for _, item := range response_list {
         config := item.(map[string]interface{})
         if _, ok := config["Repo"]; !ok {
+            fmt.Println(response_list)
             t.Error("Repo not found in response list item.")
         }
         if _, ok := config["Branch"]; !ok {

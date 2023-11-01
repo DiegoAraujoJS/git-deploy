@@ -27,3 +27,14 @@ func VerifyPasswordMiddleware(next http.Handler) http.Handler {
         }
     })
 }
+
+func Ping(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        if r.URL.Path == "/ping" {
+            w.WriteHeader(http.StatusOK)
+            w.Write([]byte("ok"))
+            return
+        }
+        next.ServeHTTP(w, r)
+    })
+}

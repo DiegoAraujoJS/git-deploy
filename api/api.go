@@ -26,9 +26,9 @@ func ListenAndServe() {
     router.HandleFunc("/deleteTimer", routes.DeleteTimer)
     router.HandleFunc("/getTimers", routes.GetTimers)
 
-    handler := routes.EnableCorsMiddleware(
+    handler := routes.Ping(routes.EnableCorsMiddleware(
         routes.VerifyPasswordMiddleware(router),
-    )
+    ))
 
     if utils.ConfigValue.Port == "" {
         utils.ConfigValue.Port = PORT

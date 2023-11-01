@@ -4,3 +4,4 @@ scripts
 git-history.db
 .DS_Store
 main/panic*
+.vimInit.lua

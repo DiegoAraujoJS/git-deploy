@@ -70,6 +70,8 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
 
 func GetCommits(w http.ResponseWriter, r *http.Request) {
 
+    // Where "i", "j" and "branch" are request params:
+    //
     //  i       j       branch      solution
 
     //  YES     YES     YES         Get all commits from branch from i up to j.
