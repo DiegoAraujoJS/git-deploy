@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
 	"log"
 
@@ -10,8 +11,20 @@ import (
 )
 
 var sql_database *sql.DB
+var no_database bool
 
-func CreateTables() {
+func InitDatabase() {
+    if no_database {return}
+
+	noDb := flag.Bool("noDb", false, "a bool")
+	flag.Parse()
+    no_database = *noDb
+
+    if no_database {
+        log.Println("-noDb flag detected. Using git deploy server without database")
+        return
+    }
+
 	db, err := Connect()
 	if err != nil {
 		log.Println("Error while opening database connection:", err.Error())
@@ -53,6 +66,7 @@ func CreateTables() {
 }
 
 func Connect() (*sql.DB, error) {
+    if no_database {return nil, fmt.Errorf("-noDb flag detected; server is running disconnected from database")}
     if sql_database != nil {
         return sql_database, nil
     }

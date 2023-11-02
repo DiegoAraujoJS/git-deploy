@@ -64,6 +64,7 @@ func checkoutBuildInsert(action *Action) error {
     }
     if action.Status.Stdout == nil { action.Status.Stdout = &bytes.Buffer{} }
     if action.Status.Stderr == nil { action.Status.Stderr = &bytes.Buffer{} }
+
     action.Status.Moment = checkout
 	checkout_result, err := Checkout(action)
     if err != nil {
@@ -71,11 +72,13 @@ func checkoutBuildInsert(action *Action) error {
         action.Status.Stderr.WriteString(err.Error())
         return err
     }
+
     action.Status.Moment = building
     if build_err := Build(action); build_err != nil {
         action.Status.Moment = inactive
         return build_err
     }
+
     action.Status.Moment = registering
     if query_error := database.InsertVersionChangeEvent(action.App, checkout_result.Hash().String()); query_error != nil {
         action.Status.Moment = inactive
