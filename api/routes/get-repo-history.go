@@ -30,11 +30,13 @@ func GetRepoHistory(w http.ResponseWriter, r *http.Request) {
     _, ok := utils.Applications[r.URL.Query().Get("repo")]
     if !ok {
         WriteError(&w, "Repository not found", http.StatusNotFound)
+        WriteResponseOk(&w, []*VersionChangeEventWithCommit{})
         return
     }
     versionChangeEvents, err := database.SelectVersionChangeEvents(r.URL.Query().Get("repo"))
     if err != nil {
         log.Println(err.Error())
+        WriteResponseOk(&w, []*VersionChangeEventWithCommit{})
         return
     }
     i, j := NormalizeSliceIndexes(len(versionChangeEvents), r)
