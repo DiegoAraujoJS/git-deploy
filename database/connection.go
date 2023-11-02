@@ -68,12 +68,6 @@ func Connect() (*sql.DB, error) {
         log.Println("Error while opening database connection:", err.Error())
         return nil, err
     }
-	err = new_sql_database.Ping()
-	if err != nil {
-		log.Println("Error while pinging database:", err.Error())
-        defer new_sql_database.Close()
-        return nil, err
-	}
     sql_database = new_sql_database
     fmt.Println("Successfully connected to database")
     return sql_database, err
