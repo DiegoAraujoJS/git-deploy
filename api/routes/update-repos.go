@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -35,11 +34,6 @@ func updateRepos () []error {
 }
 
 func UpdateRepos(w http.ResponseWriter, r *http.Request) {
-    errors := updateRepos()
-	if len(errors) != 0 {
-		json, _ := json.Marshal(errors)
-		WriteError(&w, string(json), http.StatusInternalServerError)
-		return
-	}
+    updateRepos()
     WriteResponseOk(&w, "Repositories updated successfully 👌")
 }

@@ -134,15 +134,15 @@ func GetCommits(w http.ResponseWriter, r *http.Request) {
             c, err = log.Next()
         }
     } else {
-        opts := &sortedCommitsOptions{
-            all: j_err != nil,
-            number: j,
+        opts := &utils.SortedCommitsOptions{
+            All: j_err != nil,
+            Number: j,
         }
 
         if i_err == nil {
-            filtered_commits = getSortedCommitsMap(app.Repo, opts)[i:]
+            filtered_commits = utils.GetSortedCommitsMap(app.Repo, opts)[i:]
         } else {
-            filtered_commits = getSortedCommitsMap(app.Repo, opts)
+            filtered_commits = utils.GetSortedCommitsMap(app.Repo, opts)
         }
     }
 

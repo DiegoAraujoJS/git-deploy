@@ -1,4 +1,4 @@
-package routes
+package utils
 
 import (
 	"github.com/go-git/go-git/v5"
@@ -6,21 +6,13 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-func sortByName(n string, m string) bool {
-    return n < m
-}
-
-func committerWhenAfter(a *object.Commit, b *object.Commit) bool {
-    return a.Committer.When.After(b.Committer.When)
-}
-
-type sortedCommitsOptions struct {
-    all bool
-    number int
+type SortedCommitsOptions struct {
+    All bool
+    Number int
 }
 
 // This function is thought over the fact that the most recent commit of a git repository is one of its leafs. The most recent before that is either one of the parents of the most recent one or one of the leafs of the repository, and so on.
-func getSortedCommitsMap(repo *git.Repository, opts *sortedCommitsOptions) []*object.Commit {
+func GetSortedCommitsMap(repo *git.Repository, opts *SortedCommitsOptions) []*object.Commit {
     var sorted = []*object.Commit{}
 
     // 1. Define the set of leafs
@@ -40,7 +32,7 @@ func getSortedCommitsMap(repo *git.Repository, opts *sortedCommitsOptions) []*ob
             most_recent = commit
             continue
         }
-        if committerWhenAfter(commit, most_recent) {
+        if commit.Committer.When.After(most_recent.Committer.When) {
             most_recent = commit
         }
     }
@@ -49,7 +41,7 @@ func getSortedCommitsMap(repo *git.Repository, opts *sortedCommitsOptions) []*ob
     sorted = append(sorted, most_recent)
 
     // 4. If the commit found in 2. has no parents, return the list of 3. Else redefine the set (remove the commit found in 2., add its parents), and go to step 2.
-    if most_recent.NumParents() == 0 || (len(sorted) == opts.number && !opts.all) {
+    if most_recent.NumParents() == 0 || (len(sorted) == opts.Number && !opts.All) {
         return sorted
     }
     delete(set, most_recent.Hash)
