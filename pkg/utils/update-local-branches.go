@@ -95,6 +95,13 @@ func ForceUpdateAllBranches(repo *git.Repository) error {
 }
 
 func GetBranch(repo *git.Repository, branch string) (*plumbing.Reference, error) {
-    return repo.Storer.Reference(plumbing.NewBranchReferenceName(branch))
+    refs, err := repo.References()
+
+    for ref, err := refs.Next(); err == nil; ref, err = refs.Next() {
+        if ref.Name().Short() == branch {
+            return ref, nil
+        }
+    }
+    return nil, err
 }
 
