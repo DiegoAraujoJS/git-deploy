@@ -31,7 +31,7 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
     globals.Get_commits_rw_mutex.RLock()
     defer globals.Get_commits_rw_mutex.RUnlock()
 
-    branches, err := app.Repo.Branches()
+    branches, err := app.Repo.References()
     if err != nil {
         log.Println(err.Error())
         return
@@ -40,7 +40,9 @@ func GetRepoTags(w http.ResponseWriter, r *http.Request) {
     repo_tags := &RepoTags{}
     repo_branches := []string{}
     for branch, err := branches.Next(); err == nil; branch, err = branches.Next() {
-        repo_branches = append(repo_branches, branch.Name().Short())
+        if branch.Name().IsBranch() || branch.Name().IsRemote() {
+            repo_branches = append(repo_branches, branch.Name().Short())
+        }
     }
 
     repo_tags.Branches = utils.MergeSort(repo_branches, func (n string, m string) bool {

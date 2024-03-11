@@ -40,14 +40,16 @@ func GetSortedCommitsMap(repo *git.Repository, opts *SortedCommitsOptions) []*ob
     // 3. Add the commit found in 2. to a list.
     sorted = append(sorted, most_recent)
 
+    // Special return case: list is full of commits according to opts.Number cap.
+    if len(sorted) == opts.Number && !opts.All {return sorted}
+
     // 4. If the commit found in 2. has no parents, return the list of 3. Else redefine the set (remove the commit found in 2., add its parents), and go to step 2.
-    if most_recent.NumParents() == 0 || (len(sorted) == opts.Number && !opts.All) {
-        return sorted
-    }
+    if most_recent.NumParents() == 0 {return sorted}
+
     delete(set, most_recent.Hash)
     parents_iter := most_recent.Parents()
-    for c, err := parents_iter.Next(); err == nil; c, err = parents_iter.Next() {
-        set[c.Hash] = c
+    for parent, err := parents_iter.Next(); err == nil; parent, err = parents_iter.Next() {
+        set[parent.Hash] = parent
     }
     goto step_two
 }
