@@ -1,0 +1,17 @@
+1. make a commit, push to local branch
+2. getRepos
+3. getCommits
+
+OK
+
+1. create new branch, push
+2. getRepos
+3. getCommits
+
+OK
+
+1. push to newly created branch
+2. getRepos
+3. getCommits
+
+OK

@@ -17,8 +17,10 @@ func GetSortedCommitsMap(repo *git.Repository, opts *SortedCommitsOptions) []*ob
 
     // 1. Define the set of leafs
     var set = map[plumbing.Hash]*object.Commit{}
-    branches, _ := repo.Branches()
-    for r, err := branches.Next(); err == nil; r, err = branches.Next() {
+    refs, _ := repo.References()
+    for r, err := refs.Next(); err == nil; r, err = refs.Next() {
+        if !r.Name().IsBranch() && !r.Name().IsRemote() {continue}
+
         c, c_err := repo.CommitObject(r.Hash())
         if c_err != nil {continue}
         set[c.Hash] = c

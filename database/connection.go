@@ -79,11 +79,13 @@ func Connect() (*sql.DB, error) {
     fmt.Println("Attempting to connect to database with connection string:", conn_string)
     new_sql_database, err := sql.Open("sqlserver", conn_string)
     if err != nil {
+        no_database = true
         log.Println("Error while opening database connection:", err.Error())
         return nil, err
     }
 	err = new_sql_database.Ping()
 	if err != nil {
+        no_database = true
 		log.Println("Error while pinging database:", err.Error())
         defer new_sql_database.Close()
         return nil, err
